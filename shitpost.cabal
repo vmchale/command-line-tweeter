@@ -17,7 +17,6 @@ library
   hs-source-dirs:      src
   exposed-modules:     Tweet
   build-depends:       base >= 4.7 && < 5
-  --network.oath requires old stuff idk
                      , aeson
                      , http-client-tls
                      , http-client
