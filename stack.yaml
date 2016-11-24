@@ -1,0 +1,7 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- oauthenticated-0.1.3.4
+resolver: lts-7.10
