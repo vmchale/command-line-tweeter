@@ -11,7 +11,8 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
 import Web.Authenticate.OAuth
-import qualified Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Char8 (pack, unpack)
+import Data.Char (toLower)
 
 data Tweet = Tweet
     { status    :: String
@@ -23,11 +24,10 @@ instance ToJSON Tweet where
 --query twitter to post stdin (aka what's passed in via pipes)
 exec :: IO ()
 exec = do
-    requestObject <- inputToTweet
+    requestString <- urlString
     manager <- newManager tlsManagerSettings
-    signedRequest <- parseRequest "https://api.twitter.com/1.1/statuses/update.json" >>= signRequest
-    let request = signedRequest { method = "POST" , requestBody = RequestBodyLBS $ encode requestObject }
-    print request
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString)
+    request <- signRequest $ initialRequest { method = "POST" }
     response request manager
 
 response :: Request -> Manager -> IO ()
@@ -50,7 +50,7 @@ credential = newCredential token secretToken
     where token       = "739626641450635265-O9qWyuHbglnmCablfw46D95VMnHp10P"
           secretToken = "mfvMsChCt6VbMCD8XVOjCK7bGbit2BmBvC1YujL3mRzxF"
 
-inputToTweet :: IO Value
-inputToTweet = do
-    content <- fmap (take 140) getContents --aka stdin aka compatible w/ pipes
-    return $ toJSON Tweet { status = content, trim_user = True }
+urlString :: IO String
+urlString = do
+    content <- fmap (pack . (take 140)) getContents --aka stdin aka compatible w/ pipes
+    return $ "?status=" ++ ((unpack . paramEncode) content) ++ "&trim_user" ++ (map toLower $ show True)
