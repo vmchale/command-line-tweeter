@@ -41,14 +41,14 @@ signRequest = signOAuth oAuth credential
 
 oAuth :: OAuth
 oAuth = newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
-    where secret = "EwozUJbFXzXKjoYWdf9zYrxiSagz1eDbEMWLlfjzinn0RGEQrl"
-          key    = "Zi4fdD888qYBYSD7n0QkRv6Yr"
+    where secret = "YOUR_SECRET_KEY"
+          key    = "YOUR_API_KEY"
           url    = "api.twitter.com"
 
 credential :: Credential
 credential = newCredential token secretToken
-    where token       = "739626641450635265-O9qWyuHbglnmCablfw46D95VMnHp10P"
-          secretToken = "mfvMsChCt6VbMCD8XVOjCK7bGbit2BmBvC1YujL3mRzxF"
+    where token       = "TOKEN"
+          secretToken = "TOKEN_SECRET"
 
 urlString :: IO String
 urlString = do

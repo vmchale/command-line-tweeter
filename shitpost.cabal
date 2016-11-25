@@ -1,6 +1,6 @@
 name:                shitpost
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            Post tweets that you pipe to stdin
 description:         Please see README.md
 homepage:            https://github.com/vmchale/shitpost#readme
 license:             BSD3
@@ -10,7 +10,6 @@ maintainer:          tmchale@wisc.edu
 copyright:           2016 Vanessa McHale
 category:            Web
 build-type:          Simple
--- extra-source-files:
 cabal-version:       >=1.10
 
 library
