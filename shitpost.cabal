@@ -22,6 +22,7 @@ library
                      , http-types
                      , authenticate-oauth
                      , bytestring
+                     , split
   default-language:    Haskell2010
 
 executable shitpost
