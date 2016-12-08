@@ -25,7 +25,7 @@ instance ToJSON Tweet where
 --query twitter to post stdin (aka what's passed in via pipes)
 exec :: IO ()
 exec = do
-    content <- fmap (map BS.pack) $ fmap (chunksOf 140) getContents --aka stdin aka compatible w/ pipes
+    content <- fmap ((take 4) . (map BS.pack) .  (chunksOf 140)) getContents --aka stdin aka compatible w/ pipes
     sequence_ $ fmap tweet content
 
 tweet :: BS.ByteString -> IO ()
