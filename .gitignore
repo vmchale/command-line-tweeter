@@ -1,5 +1,6 @@
 dist
 dist-*
+doc
 .cred
 cabal-dev
 *.o
