@@ -1,7 +1,7 @@
 name:                clit
 version:             0.1.0.0
-synopsis:            Post tweets that you pipe to stdin
-description:         Please see README.md
+synopsis:            Post tweets from stdin
+description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
 license:             BSD3
 license-file:        LICENSE

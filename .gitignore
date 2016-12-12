@@ -2,6 +2,7 @@ dist
 dist-*
 doc
 .cred
+.copy
 cabal-dev
 *.o
 *.hi
