@@ -1,6 +1,6 @@
 module Main where
 
-import Tweet
+import Web.Exec
 
 main :: IO ()
 main = exec

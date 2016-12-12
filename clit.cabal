@@ -2,7 +2,7 @@ name:                clit
 version:             0.1.0.0
 synopsis:            Post tweets that you pipe to stdin
 description:         Please see README.md
-homepage:            https://github.com/vmchale/shitpost#readme
+homepage:            https://github.com/vmchale/command-line-tweeter#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Vanessa McHale
@@ -14,7 +14,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Tweet
+  exposed-modules:     Web.Tweet
+                     , Web.Exec
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , http-client-tls
@@ -23,6 +24,7 @@ library
                      , authenticate-oauth
                      , bytestring
                      , split
+                     , optparse-applicative
   default-language:    Haskell2010
 
 executable tweet
@@ -35,4 +37,4 @@ executable tweet
 
 source-repository head
   type:     git
-  location: https://github.com/vmchale/shitpost
+  location: https://github.com/vmchale/command-line-tweeter
