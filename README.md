@@ -26,3 +26,5 @@ Then type `stack install` in the directory and it will generate an executable ca
 To tweet from stderr, run a command like that pipes stderr to stdin
 
 ```YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet```
+
+This program powers the twitter account [@my_build_errors](https://twitter.com/my_build_errors)
