@@ -49,20 +49,31 @@ response request manager = do
 -- | Sign a request using your OAuth dev token.
 -- Uses the IO monad because signatures require a timestamp
 signRequest :: Request -> IO Request
-signRequest = signOAuth oAuth credential
+signRequest req = do
+    o <- oAuth
+    c <- credential
+    signOAuth o c req
 
 -- | Create an OAuth token
-oAuth :: OAuth
-oAuth = newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
-    where secret = "CzUrfL4lbhdY7qMyGPDq6rVOuNglkTp7fTKEvRfr2P1iIMd16a"
-          key    = "375wBiEuvaxHMjE7OAiDKSveH"
-          url    = "api.twitter.com"
+oAuth :: IO OAuth
+oAuth = do
+    secret <- (flip (!!) 1) <$> getConfigData
+    key <- (flip (!!) 0) <$> getConfigData
+    let url = "api.twitter.com"
+    return newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
 
 -- | Create a new credential from a token and secret component of that token
-credential :: Credential
-credential = newCredential token secretToken
-    where token       = "802268569585287168-mL9GTRozVUQRH3g7yLr0TQ2vx3AFuiY"
-          secretToken = "P0a2vMaNvBJaismFjeQSzUccpetB1LzeNql9OsNcFhj92"
+credential :: IO Credential
+credential = newCredential <$> token <*> secretToken
+    where token       = (flip (!!) 2) <$> getConfigData
+          secretToken = (flip (!!) 3) <$> getConfigData
+
+getConfigData :: IO [BS.ByteString]
+getConfigData = ((map (BS.pack . filterLine)) . lines) <$> readFile ".cred"
+
+-- | Filter a line of a file for only the actual data and no descriptors
+filterLine :: String -> String
+filterLine = reverse . (takeWhile (not . (`elem` (" :" :: String)))) . reverse
 
 -- | Convert a byteString to the percent-encoded version
 urlString :: BS.ByteString -> IO String
