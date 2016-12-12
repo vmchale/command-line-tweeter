@@ -1,0 +1,4 @@
+#!/bin/bash
+library --bash-completion-script `which tweet` > tmp
+sudo cp tmp /etc/bash_completion.d/tweet
+rm tmp
