@@ -3,7 +3,7 @@
 
 -- | Various utilities to tweet using the twitter api
 -- 
--- Make sure you have a file credentials file (default `.cred`) with the following info in the correct order:
+-- Make sure you have a file credentials file (default `.cred`) with the following info:
 --
 -- api-key: API_KEY
 --
@@ -64,19 +64,30 @@ signRequest filepath req = do
 -- | Create an OAuth token
 oAuth :: FilePath -> IO OAuth
 oAuth filepath = do
-    secret <- (flip (!!) 1) <$> getConfigData filepath
-    key <- (flip (!!) 0) <$> getConfigData filepath
+    secret <- (lineByKey "api-sec") <$> getConfigData filepath
+    key <- (lineByKey "api-key") <$> getConfigData filepath
     let url = "api.twitter.com"
     return newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
 
 -- | Create a new credential from a token and secret component of that token
 credential :: FilePath -> IO Credential
 credential filepath = newCredential <$> token <*> secretToken
-    where token       = (flip (!!) 2) <$> getConfigData filepath
-          secretToken = (flip (!!) 3) <$> getConfigData filepath
+    where token       = (lineByKey "tok") <$> getConfigData filepath
+          secretToken = (lineByKey "tok-sec") <$> getConfigData filepath
 
-getConfigData :: FilePath -> IO [BS.ByteString]
-getConfigData filepath = ((map (BS.pack . filterLine)) . lines) <$> readFile filepath
+-- | Pick out a key value from a key
+lineByKey :: BS.ByteString -> [(BS.ByteString, BS.ByteString)] -> BS.ByteString
+lineByKey key = snd . head . (filter (\i -> fst i == key))
+
+-- | Get pairs of "key" to search for and actual values
+getConfigData :: FilePath -> IO [(BS.ByteString, BS.ByteString)]
+getConfigData filepath = zip <$> keys <*> content
+    where content = (map (BS.pack . filterLine)) . lines <$> file
+          keys    = (map (BS.pack . keyLine)) . lines <$> file
+          file    = readFile filepath
+
+keyLine :: String -> String
+keyLine = takeWhile (/=':')
 
 -- | Filter a line of a file for only the actual data and no descriptors
 filterLine :: String -> String
