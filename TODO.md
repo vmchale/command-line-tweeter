@@ -1,3 +1,3 @@
 - [x] allow to override with custom credential file
-- [ ] parse credentials intelligently by key
-- [ ] allow custom number of tweets
+- [x] parse credentials intelligently by key
+- [x] allow custom number of tweets
