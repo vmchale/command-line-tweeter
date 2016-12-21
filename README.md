@@ -1,4 +1,4 @@
-#CLIT - Command Line Interface Tweeter
+#Command Line Interface Tweeter
 
 ##Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
