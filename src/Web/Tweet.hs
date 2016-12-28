@@ -2,7 +2,7 @@
 
 -- | Various utilities to tweet using the twitter api
 -- 
--- Make sure you have a file credentials file (default `.cred`) with the following info:
+-- Make sure you have a file credentials file (default the executable looks for is `.cred`) with the following info:
 --
 -- ```
 --
@@ -18,22 +18,21 @@
 
 -- | Functions to tweet
 module Web.Tweet
-    -- * Functions to Tweet
+    -- * Functions to tweet
     ( basicTweet
     , tweetData
     , thread
-    -- * Data types
+    -- * Data type for a tweet
     , module Web.Tweet.Types
     -- * Functions to sign API requests
     , signRequest
-    -- * Functions to generate a URL string from 
+    -- * Functions to generate a URL string from a `Tweet`
     , urlString
     ) where
 
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
-import Web.Authenticate.OAuth
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Data.Char (toLower)
@@ -42,26 +41,29 @@ import Web.Tweet.Utils
 import Control.Monad
 import Data.List.Split (chunksOf)
 import Data.Maybe
+import Control.Lens
+import Web.Authenticate.OAuth
+import Web.Tweet.Sign
 
 -- | thread tweets together nicely. Takes a list of handles to reply to, plus the ID of the status you're replying to.
 thread :: [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
     content <- (take num) . (chunksOf (140-(length handleStr))) <$> getContents
-    print $ urlString (Tweet { status = content !! 0, trimUser = True, handles = hs, replyID = idNum})
-    let f = (\str i -> (flip tweetData filepath) (Tweet { status = str, trimUser = True, handles = hs, replyID = if i == 0 then Nothing else Just i }))
+    print $ urlString (Tweet { _status = content !! 0, _trimUser = True, _handles = hs, _replyID = idNum})
+    let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
 
--- | Basic tweet, not a reply to anything
+-- | Tweet a string given a path to credentials
 basicTweet :: BS.ByteString -> FilePath -> IO Int
 basicTweet contents = tweetData (mkTweet contents)
 
--- | Make a tweet with only the contents
+-- | Make a `Tweet` with only the contents
 mkTweet :: BS.ByteString -> Tweet
-mkTweet contents = Tweet { status = BS.unpack contents , trimUser = False, handles = [], replyID = Nothing }
+mkTweet contents = over (status) (const (BS.unpack contents)) $ def 
 
--- | tweet, given a Tweet. Return id of posted tweet.
+-- | tweet, given a `Tweet` and path to credentials. Return id of posted tweet.
 tweetData :: Tweet -> FilePath -> IO Int
 tweetData tweet filepath = do
     let requestString = urlString tweet
@@ -78,42 +80,20 @@ response request manager = do
     BSL.putStrLn $ responseBody response
     return $ (read . (takeWhile (/=',')) . (drop 52)) (BSL.unpack $ responseBody response)
 
--- | Sign a request using your OAuth dev token.
--- Uses the IO monad because signatures require a timestamp
-signRequest :: FilePath -> Request -> IO Request
-signRequest filepath req = do
-    o <- oAuth filepath
-    c <- credential filepath
-    signOAuth o c req
-
--- | Create an OAuth token
-oAuth :: FilePath -> IO OAuth
-oAuth filepath = do
-    secret <- (lineByKey "api-sec") <$> getConfigData filepath
-    key <- (lineByKey "api-key") <$> getConfigData filepath
-    let url = "api.twitter.com"
-    return newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
-
--- | Create a new credential from a token and secret component of that token
-credential :: FilePath -> IO Credential
-credential filepath = newCredential <$> token <*> secretToken
-    where token       = (lineByKey "tok") <$> getConfigData filepath
-          secretToken = (lineByKey "tok-sec") <$> getConfigData filepath
-
 -- | Convert a tweet to a percent-encoded url for querying an API
 urlString :: Tweet -> String
 urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
                          , "&trim_user="
                          , map toLower (show trim)
-                         , (if isJust (replyID tweet) then "&in_reply_to_status_id=" else "")
+                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "")
                          , reply ]
-    where trim  = trimUser tweet
-          reply = maybe "" id (fmap show $ replyID $ tweet)
+    where trim  = _trimUser tweet
+          reply = maybe "" id (fmap show $ _replyID $ tweet)
 
 -- | Encode the status update so it's fit for a URL
 tweetEncode :: Tweet -> BS.ByteString
 tweetEncode tweet = paramEncode $ handleStr `BS.append` content
-    where content   = BS.pack . status $ tweet
+    where content   = BS.pack . _status $ tweet
           handleStr = BS.pack $ concatMap ((++ " ") . ((++) "@")) hs
-          hs        = handles tweet
+          hs        = _handles tweet

@@ -1,6 +1,7 @@
 dist
 dist-*
 doc
+carol
 .cred*
 .copy
 cabal-dev
