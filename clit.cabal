@@ -28,6 +28,7 @@ library
                      , bytestring
                      , split
                      , optparse-applicative < 0.13.0.0
+                     , unbounded-delays
   default-language:    Haskell2010
 
 executable tweet
