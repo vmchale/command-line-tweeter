@@ -94,7 +94,7 @@ urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
                          , "&trim_user="
                          , map toLower (show trim)
-                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "null")
+                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "")
                          , reply ]
     where trim  = _trimUser tweet
           reply = maybe "" id (fmap show $ _replyID $ tweet)

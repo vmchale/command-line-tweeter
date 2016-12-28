@@ -8,4 +8,3 @@
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
 - [x] improved developer ergonomics
-- [ ] test suite idk
