@@ -3,7 +3,7 @@
 ## Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
 
-Then place your API keys and OAuth tokens in the file `.cred`, in the correct order, separated by a line break:
+Then place your API keys and OAuth tokens in a file `.cred`, separated by a line break:
 
 ```
 api-key: API_KEY_HERE
@@ -27,4 +27,4 @@ To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 
 ```YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet```
 
-This program powers the twitter account [@my_build_errors](https://twitter.com/my_build_errors)
+This script powers the twitter account [@my_build_errors](https://twitter.com/my_build_errors)

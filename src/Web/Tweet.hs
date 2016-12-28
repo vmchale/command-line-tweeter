@@ -51,8 +51,7 @@ thread hs idNum num filepath = do
     print $ urlString (Tweet { status = content !! 0, trimUser = True, handles = hs, replyID = idNum})
     let f = (\str i -> (flip tweetData filepath) (Tweet { status = str, trimUser = True, handles = hs, replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
-    void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum --this is causing minor errors :(
-                                                                         --which is better than major errors :)
+    void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
 
 -- | Basic tweet, not a reply to anything
 basicTweet :: BS.ByteString -> FilePath -> IO Int
