@@ -7,4 +7,5 @@
 - [ ] documentation
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
-
+- [ ] improved developer ergonomics
+- [ ] thread tweets not just a string

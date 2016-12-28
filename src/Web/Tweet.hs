@@ -45,23 +45,27 @@ import Control.Lens
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
 
--- | thread tweets together nicely. Takes a list of handles to reply to, plus the ID of the status you're replying to.
-thread :: [String] -> Maybe Int -> Int -> FilePath -> IO ()
-thread hs idNum num filepath = do
+-- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
+-- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
+-- `thread "Hi I'm back in New York!" ["friend1","friend2"] Nothing 1 ".cred"`
+thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
+thread contents hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
-    content <- (take num) . (chunksOf (140-(length handleStr))) <$> getContents
+    let content = (take num) . (chunksOf (140-(length handleStr))) $ contents
     print $ urlString (Tweet { _status = content !! 0, _trimUser = True, _handles = hs, _replyID = idNum})
     let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
+--make this accept text and generate a list of (IO) Tweets to be twat.
 
--- | Tweet a string given a path to credentials
-basicTweet :: BS.ByteString -> FilePath -> IO Int
+-- | Tweet a string given a path to credentials.
+-- `basicTweet "On the airplane." ".cred"
+basicTweet :: String -> FilePath -> IO Int
 basicTweet contents = tweetData (mkTweet contents)
 
--- | Make a `Tweet` with only the contents
-mkTweet :: BS.ByteString -> Tweet
-mkTweet contents = over (status) (const (BS.unpack contents)) $ def 
+-- | Make a `Tweet` with only the contents.
+mkTweet :: String -> Tweet
+mkTweet contents = over (status) (const (contents)) $ def 
 
 -- | tweet, given a `Tweet` and path to credentials. Return id of posted tweet.
 tweetData :: Tweet -> FilePath -> IO Int

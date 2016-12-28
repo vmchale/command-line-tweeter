@@ -13,7 +13,13 @@ data Program = Program { cred :: Maybe FilePath , tweets :: Maybe String, replyI
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
-fromStdIn = thread [] Nothing
+fromStdIn = threadStdIn [] Nothing
+
+-- | Threaded tweets from stdIn
+threadStdIn :: [String] -> Maybe Int -> Int -> FilePath -> IO ()
+threadStdIn hs idNum num filepath = do
+    contents <- getContents
+    thread contents hs idNum num filepath
 
 -- | Executes parser
 exec :: IO ()
@@ -30,13 +36,13 @@ select (Program Nothing (Just n) Nothing Nothing) = fromStdIn (read n) ".cred"
 select (Program Nothing Nothing Nothing Nothing) = fromStdIn 4 ".cred"
 select (Program (Just file) (Just n) Nothing Nothing) = fromStdIn (read n) file
 select (Program (Just file) Nothing Nothing Nothing) = fromStdIn 4 file
-select (Program Nothing (Just n) (Just id) (Just handles)) = thread handles (read id) (read n) ".cred"
-select (Program (Just file) (Just n) (Just id) (Just handles)) = thread handles (pure . read $ id) (read n) file
-select (Program (Just file) Nothing (Just id) (Just handles)) = thread handles (pure . read $ id) 4 file
-select (Program Nothing (Just n) (Just id) Nothing) = thread [] (pure . read $ id) (read n) ".cred"
-select (Program Nothing Nothing (Just id) Nothing) = thread [] (pure . read $ id) 4 ".cred"
-select (Program Nothing Nothing (Just id) (Just handles)) = thread handles (pure . read $ id) 4 ".cred"
-select (Program (Just file) (Just n) (Just id) Nothing) = thread [] (pure . read $ id) (read n) file
+select (Program Nothing (Just n) (Just id) (Just handles)) = threadStdIn handles (read id) (read n) ".cred"
+select (Program (Just file) (Just n) (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) (read n) file
+select (Program (Just file) Nothing (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) 4 file
+select (Program Nothing (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) (read n) ".cred"
+select (Program Nothing Nothing (Just id) Nothing) = threadStdIn [] (pure . read $ id) 4 ".cred"
+select (Program Nothing Nothing (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) 4 ".cred"
+select (Program (Just file) (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) (read n) file
 
 -- | Parser to return a program datatype
 program :: Parser Program

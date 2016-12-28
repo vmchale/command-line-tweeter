@@ -25,6 +25,22 @@ Then type `stack install` in the directory and it will generate an executable ca
 ## Use
 To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 
-```YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet```
+```
+YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet
+```
 
-This script powers the twitter account [@my_build_errors](https://twitter.com/my_build_errors)
+This script powers the twitter account [@my\_build\_errors](https://twitter.com/my_build_errors) for instance. There's an example bash script for in `bash/example`
+
+## Library
+A haskell package is included. It's fairly easy to use once you have the credentials set up, with two main functions: `thread` and `basicTweet`: the first for threading your own tweets or replying to someone else's and the second for just tweeting.
+
+### Finer details
+The function `tweetData` will tweet an object of type `Tweet`. Its use is pretty self-explanatory, but how to best form `Tweet`s is non immediately obvious.
+
+`Tweet` is an instance of `Default` so you can use `def` to get an empty tweet replying to nobody and not fetching extended user data. This is especially useful if you want to use lenses and avoid ugly record syntax, e.g.
+
+```
+over (status) (const "This is the new status field) $ def
+```
+
+will give you a `Tweet` with sensible defaults and the desired text.
