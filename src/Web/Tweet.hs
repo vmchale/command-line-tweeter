@@ -16,10 +16,10 @@
 --
 -- ```
 
--- | Functions to tweet
 module Web.Tweet
+    (
     -- * Functions to tweet
-    ( basicTweet
+    basicTweet
     , tweetData
     , thread
     -- * Data type for a tweet
@@ -56,9 +56,13 @@ thread contents hs idNum num filepath = do
     let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
---make this accept text and generate a list of (IO) Tweets to be twat.
 
--- | Tweet a string given a path to credentials.
+-- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
+-- `reply "Idk what that means" ["friend1"] (Just 189943500) ".cred"`
+reply :: String -> [String] -> Maybe Int -> FilePath -> IO ()
+reply contents hs idNum filepath = thread contents hs idNum 1 filepath
+
+-- | Tweet a string given a path to credentials; return the id of the status.
 -- `basicTweet "On the airplane." ".cred"
 basicTweet :: String -> FilePath -> IO Int
 basicTweet contents = tweetData (mkTweet contents)
@@ -90,12 +94,12 @@ urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
                          , "&trim_user="
                          , map toLower (show trim)
-                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "")
+                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "null")
                          , reply ]
     where trim  = _trimUser tweet
           reply = maybe "" id (fmap show $ _replyID $ tweet)
 
--- | Encode the status update so it's fit for a URL
+-- | Percent-ncode the status update so it's fit for a URL
 tweetEncode :: Tweet -> BS.ByteString
 tweetEncode tweet = paramEncode $ handleStr `BS.append` content
     where content   = BS.pack . _status $ tweet

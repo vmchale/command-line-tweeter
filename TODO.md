@@ -4,8 +4,8 @@
 - [x] thread stuff nicely
 - [x] make it thread automatically?
 - [x] fix bug causing short things
-- [ ] documentation
+- [x] documentation
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
-- [ ] improved developer ergonomics
-- [ ] thread tweets not just a string
+- [x] improved developer ergonomics
+- [ ] test suite idk

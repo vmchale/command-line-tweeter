@@ -14,7 +14,7 @@ signRequest filepath req = do
     c <- credential filepath
     signOAuth o c req
 
--- | Create an OAuth token
+-- | Create an OAuth from config data in a file
 oAuth :: FilePath -> IO OAuth
 oAuth filepath = do
     secret <- (lineByKey "api-sec") <$> getConfigData filepath
@@ -22,7 +22,7 @@ oAuth filepath = do
     let url = "api.twitter.com"
     return newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
 
--- | Create a new credential from a token and secret component of that token
+-- | Create a new credential from a token and token secret
 credential :: FilePath -> IO Credential
 credential filepath = newCredential <$> token <*> secretToken
     where token       = (lineByKey "tok") <$> getConfigData filepath
