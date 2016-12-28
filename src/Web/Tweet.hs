@@ -41,16 +41,17 @@ import Web.Tweet.Types
 import Web.Tweet.Utils
 import Control.Monad
 import Data.List.Split (chunksOf)
+import Data.Maybe
 
 -- | thread tweets together nicely. Takes a list of handles to reply to, plus the ID of the status you're replying to.
-thread :: [String] -> Int -> Int -> FilePath -> IO ()
-thread hs replyID num filepath = do
+thread :: [String] -> Maybe Int -> Int -> FilePath -> IO ()
+thread hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
     content <- (take num) . (chunksOf (140-(length handleStr))) <$> getContents
-    print $ urlString (Tweet { status = content !! 0, trimUser = True, handles = hs, replyID = pure 0})
-    let f = (\str i -> (flip tweetData filepath) (Tweet { status = str, trimUser = True, handles = hs, replyID = Just i }))
+    print $ urlString (Tweet { status = content !! 0, trimUser = True, handles = hs, replyID = idNum})
+    let f = (\str i -> (flip tweetData filepath) (Tweet { status = str, trimUser = True, handles = hs, replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
-    void $ foldr ((>=>) . f) initial content $ replyID
+    void $ foldl ((>=>) . f) initial $ maybe 0 id idNum
 
 -- | Basic tweet, not a reply to anything
 basicTweet :: BS.ByteString -> FilePath -> IO Int
@@ -105,10 +106,10 @@ urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
                          , "&trim_user="
                          , map toLower (show trim)
-                         , "&in_reply_to_status_id="
-                         , show reply ]
+                         , (if isJust (replyID tweet) then "&in_reply_to_status_id=" else "")
+                         , reply ]
     where trim  = trimUser tweet
-          reply = maybe 0 id (replyID tweet)
+          reply = maybe "" id (fmap show $ replyID $ tweet)
 
 -- | Encode the status update so it's fit for a URL
 tweetEncode :: Tweet -> BS.ByteString
