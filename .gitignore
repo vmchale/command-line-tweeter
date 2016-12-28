@@ -1,7 +1,7 @@
 dist
 dist-*
 doc
-.cred
+.cred*
 .copy
 cabal-dev
 *.o
