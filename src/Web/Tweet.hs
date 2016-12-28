@@ -13,11 +13,23 @@
 --
 -- tok-sec: TOKEN_SECRET
 
-module Web.Tweet
-    ( tweet
+-- | Functions to tweet
+{--module Web.Tweet
+    -- * Functions to Tweet
+    ( basicTweet
+    , tweetData
+    -- * Data types
+    , Tweet
+    , status
+    , trimUser
+    , handles
+    , replyID
+    -- * Functions to sign API requests
     , signRequest
+    -- * Functions to generate a URL string from 
     , urlString
-    ) where
+    ) where--}
+module Web.Tweet where
 
 import Data.Aeson
 import GHC.Generics
@@ -31,27 +43,38 @@ import Data.Char (toLower)
 
 -- | Data type for our request
 data Tweet = Tweet
-    { status    :: String
-    , trim_user :: Bool
+    { status   :: String
+    , trimUser :: Bool
+    , handles  :: [String]
+    , replyID  :: Maybe Int
     } deriving Generic
 
 instance ToJSON Tweet where
 
--- | tweet a byteString, with credentials from a given file
-tweet :: FilePath -> BS.ByteString -> IO ()
-tweet filepath content = do
-    requestString <- urlString content
+-- | Basic tweet, not a reply to anything
+basicTweet :: BS.ByteString -> FilePath -> IO Int
+basicTweet contents = tweetData (mkTweet contents)
+
+-- | Make a tweet with only the contents
+mkTweet :: BS.ByteString -> Tweet
+mkTweet contents = Tweet { status = BS.unpack contents , trimUser = False, handles = [], replyID = Nothing }
+
+-- | tweet given a Tweet
+tweetData :: Tweet -> FilePath -> IO Int
+tweetData tweet filepath = do
+    let requestString = urlString tweet
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "POST" }
     response request manager
 
 -- | print output of a request
-response :: Request -> Manager -> IO ()
+response :: Request -> Manager -> IO Int
 response request manager = do
     response <- httpLbs request manager
     putStrLn $ "The status code was: " ++ show (statusCode $ responseStatus response)
     BSL.putStrLn $ responseBody response
+    return $ (read . (takeWhile (/=',')) . (drop 52)) (BSL.unpack $ responseBody response)
 
 -- | Sign a request using your OAuth dev token.
 -- Uses the IO monad because signatures require a timestamp
@@ -83,17 +106,30 @@ lineByKey key = snd . head . (filter (\i -> fst i == key))
 getConfigData :: FilePath -> IO [(BS.ByteString, BS.ByteString)]
 getConfigData filepath = zip <$> keys <*> content
     where content = (map (BS.pack . filterLine)) . lines <$> file
-          keys    = (map (BS.pack . keyLine)) . lines <$> file
+          keys    = (map (BS.pack . keyLinePie)) . lines <$> file
           file    = readFile filepath
 
-keyLine :: String -> String
-keyLine = takeWhile (/=':')
+-- | helper function to get the key as read from a file
+keyLinePie :: String -> String
+keyLinePie = takeWhile (/=':')
 
 -- | Filter a line of a file for only the actual data and no descriptors
 filterLine :: String -> String
 filterLine = reverse . (takeWhile (not . (`elem` (" :" :: String)))) . reverse
 
--- | Convert a byteString to the percent-encoded version
-urlString :: BS.ByteString -> IO String
-urlString content = do
-    return $ "?status=" ++ ((BS.unpack . paramEncode) content) ++ "&trim_user" ++ (map toLower $ show True)
+-- | Convert a tweet to a percent-encoded url for querying an API
+urlString :: Tweet -> String
+urlString tweet = concat [ "?status="
+                         , BS.unpack (tweetEncode tweet)
+                         , "&trim_user= "
+                         , map toLower (show trim)
+                         , "&in_reply_to_status_id="
+                         , show reply ]
+    where trim  = trimUser tweet
+          reply = maybe 0 id (replyID tweet)
+
+tweetEncode :: Tweet -> BS.ByteString
+tweetEncode tweet = paramEncode $ handleStr `BS.append` content
+    where content   = BS.pack . status $ tweet
+          handleStr = BS.pack $ concatMap ((++ " ") . ((++) "@")) hs
+          hs        = handles tweet
