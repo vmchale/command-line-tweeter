@@ -4,7 +4,7 @@
 -- 
 -- Make sure you have a file credentials file (default the executable looks for is `.cred`) with the following info:
 --
--- ```
+-- @
 --
 -- api-key: API_KEY
 --
@@ -14,7 +14,7 @@
 --
 -- tok-sec: TOKEN_SECRET
 --
--- ```
+-- @
 
 module Web.Tweet
     (
@@ -47,7 +47,8 @@ import Web.Tweet.Sign
 
 -- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
 -- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
--- `thread "Hi I'm back in New York!" ["friend1","friend2"] Nothing 1 ".cred"`
+--
+-- > thread "Hi I'm back in New York!" ["friend1","friend2"] Nothing 1 ".cred"
 thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread contents hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
@@ -58,12 +59,14 @@ thread contents hs idNum num filepath = do
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
--- `reply "Idk what that means" ["friend1"] (Just 189943500) ".cred"`
+--
+-- > reply "Idk what that means" ["friend1"] (Just 189943500) ".cred"
 reply :: String -> [String] -> Maybe Int -> FilePath -> IO ()
 reply contents hs idNum filepath = thread contents hs idNum 1 filepath
 
 -- | Tweet a string given a path to credentials; return the id of the status.
--- `basicTweet "On the airplane." ".cred"
+--
+-- > basicTweet "On the airplane." ".cred"
 basicTweet :: String -> FilePath -> IO Int
 basicTweet contents = tweetData (mkTweet contents)
 

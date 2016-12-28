@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- | Functions to sign HTTP requests with oAuth
 module Web.Tweet.Sign where
 
 import Web.Tweet.Utils
