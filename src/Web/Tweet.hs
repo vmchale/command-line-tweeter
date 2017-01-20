@@ -35,6 +35,8 @@ import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import qualified Data.Text as T
+import Data.Text.Encoding
 import Data.Char (toLower)
 import Web.Tweet.Types
 import Web.Tweet.Utils
@@ -113,7 +115,7 @@ urlString tweet = concat [ "?status="
 
 -- | Percent-ncode the status update so it's fit for a URL
 tweetEncode :: Tweet -> BS.ByteString
-tweetEncode tweet = paramEncode $ handleStr `BS.append` content
-    where content   = BS.pack . _status $ tweet
-          handleStr = BS.pack $ concatMap ((++ " ") . ((++) "@")) hs
+tweetEncode tweet = paramEncode . encodeUtf8 $ handleStr `T.append` content
+    where content   = T.pack . _status $ tweet
+          handleStr = T.pack $ concatMap ((++ " ") . ((++) "@")) hs
           hs        = _handles tweet
