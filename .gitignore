@@ -2,6 +2,7 @@ dist
 dist-*
 doc
 carol
+fuckface*
 .cred*
 .copy
 cabal-dev

@@ -53,7 +53,16 @@ thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread contents hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
     let content = (take num) . (chunksOf (140-(length handleStr))) $ contents
-    print $ urlString (Tweet { _status = content !! 0, _trimUser = True, _handles = hs, _replyID = idNum})
+    case content of
+        [] -> pure ()
+        [x] -> void $ basicTweet x filepath
+        (x:xs) -> do
+            firstId <- basicTweet x filepath
+            thread' xs hs (Just firstId) num filepath
+
+-- | Helper function to make `thread` easier to write. 
+thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
+thread' content hs idNum num filepath = do
     let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
     let initial = f (content !! 0)
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
