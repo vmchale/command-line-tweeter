@@ -9,7 +9,7 @@ import Control.Monad
 import Data.Foldable (fold)
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweets to make, the id of the status you're replying to, and a list of users you wish to mention.
-data Program = Program { cred :: Maybe FilePath , tweets :: Maybe String, replyId :: Maybe String, replyHandles :: Maybe [String] }
+data Program = Program { cred :: Maybe FilePath , tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -32,17 +32,18 @@ exec = execParser opts >>= select
 
 -- | Executes program
 select :: Program -> IO ()
-select (Program Nothing (Just n) Nothing Nothing) = fromStdIn (read n) ".cred"
+select (Program Nothing (Just n) Nothing Nothing) = fromStdIn n ".cred"
 select (Program Nothing Nothing Nothing Nothing) = fromStdIn 4 ".cred"
-select (Program (Just file) (Just n) Nothing Nothing) = fromStdIn (read n) file
+select (Program (Just file) (Just n) Nothing Nothing) = fromStdIn n file
 select (Program (Just file) Nothing Nothing Nothing) = fromStdIn 4 file
-select (Program Nothing (Just n) (Just id) (Just handles)) = threadStdIn handles (read id) (read n) ".cred"
-select (Program (Just file) (Just n) (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) (read n) file
+select (Program Nothing (Just n) (Just id) (Just handles)) = threadStdIn handles (read id) n ".cred"
+select (Program (Just file) (Just n) (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) n file
 select (Program (Just file) Nothing (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) 4 file
-select (Program Nothing (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) (read n) ".cred"
+select (Program Nothing (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) n ".cred"
 select (Program Nothing Nothing (Just id) Nothing) = threadStdIn [] (pure . read $ id) 4 ".cred"
 select (Program Nothing Nothing (Just id) (Just handles)) = threadStdIn handles (pure . read $ id) 4 ".cred"
-select (Program (Just file) (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) (read n) file
+select (Program (Just file) (Just n) (Just id) Nothing) = threadStdIn [] (pure . read $ id) n file
+select (Program (Just file) (Just n) Nothing (Just handles)) = threadStdIn handles Nothing n file
 
 -- | Parser to return a program datatype
 program :: Parser Program
@@ -52,7 +53,7 @@ program = Program
         <> short 'c'
         <> metavar "CREDENTIALS"
         <> help "path to credentials"))
-    <*> (optional $ strOption
+    <*> (optional $ read <$> strOption
         (long "tweets"
         <> short 't'
         <> metavar "NUM"
