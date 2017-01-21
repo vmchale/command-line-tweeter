@@ -55,25 +55,27 @@ thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread contents hs idNum num filepath = do
     let handleStr = concatMap (((++) " ") . ((++) "@")) hs
     let content = (take num) . (chunksOf (140-(length handleStr))) $ contents
-    case content of
-        [] -> pure ()
-        [x] -> void $ basicTweet x filepath
-        (x:xs) -> do
-            firstId <- basicTweet x filepath
-            thread' xs hs (Just firstId) num filepath
+    case idNum of
+        (Just i) -> thread' content hs idNum num filepath
+        Nothing -> case content of
+            [] -> pure ()
+            [x] -> void $ basicTweet x filepath
+            (x:xs) -> do
+                firstId <- basicTweet x filepath
+                thread' xs hs (Just firstId) num filepath
 
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
     let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
-    let initial = f (content !! 0)
+    let initial = f (head content)
     void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
 --
 -- > reply "Idk what that means" ["friend1"] (Just 189943500) ".cred"
 reply :: String -> [String] -> Maybe Int -> FilePath -> IO ()
-reply contents hs idNum filepath = thread contents hs idNum 1 filepath
+reply contents hs idNum = thread contents hs idNum 1
 
 -- | Tweet a string given a path to credentials; return the id of the status.
 --
