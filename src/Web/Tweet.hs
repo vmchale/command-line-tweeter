@@ -67,9 +67,9 @@ thread contents hs idNum num filepath = do
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
-    let f = (\str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }))
+    let f = \str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i })
     let initial = f (head content)
-    void $ foldr ((>=>) . f) initial (drop 1 content) $ maybe 0 id idNum
+    void $ foldr ((>=>) . f) initial (drop 1 content) $ fromMaybe 0 idNum
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
 --
@@ -85,7 +85,7 @@ basicTweet contents = tweetData (mkTweet contents)
 
 -- | Make a `Tweet` with only the contents.
 mkTweet :: String -> Tweet
-mkTweet contents = over (status) (const (contents)) $ def 
+mkTweet contents = over (status) (const (contents)) def 
 
 -- | tweet, given a `Tweet` and path to credentials. Return id of posted tweet.
 tweetData :: Tweet -> FilePath -> IO Int
@@ -113,7 +113,7 @@ urlString tweet = concat [ "?status="
                          , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "")
                          , reply ]
     where trim  = _trimUser tweet
-          reply = maybe "" id (fmap show $ _replyID $ tweet)
+          reply = fromMaybe "" (show <$> _replyID tweet)
 
 -- | Percent-ncode the status update so it's fit for a URL
 tweetEncode :: Tweet -> BS.ByteString
