@@ -69,7 +69,7 @@ thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
     let f = \str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i })
     let initial = f (head content)
-    void $ foldr ((>=>) . f) initial (drop 1 content) $ fromMaybe 0 idNum
+    void $ foldr ((>=>) . f) initial (reverse . drop 1 $ content) $ fromMaybe 0 idNum
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
 --
@@ -115,7 +115,7 @@ urlString tweet = concat [ "?status="
     where trim  = _trimUser tweet
           reply = fromMaybe "" (show <$> _replyID tweet)
 
--- | Percent-ncode the status update so it's fit for a URL
+-- | Percent-encode the status update so it's fit for a URL and UTF-encode it as well. 
 tweetEncode :: Tweet -> BS.ByteString
 tweetEncode tweet = paramEncode . encodeUtf8 $ handleStr `T.append` content
     where content   = T.pack . _status $ tweet

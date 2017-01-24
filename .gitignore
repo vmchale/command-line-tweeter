@@ -1,8 +1,7 @@
 dist
 dist-*
+.reads/
 doc
-carol
-fuckface*
 .cred*
 .copy
 cabal-dev
