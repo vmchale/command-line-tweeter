@@ -7,6 +7,7 @@ import Options.Applicative
 import qualified Data.ByteString.Char8 as BS
 import Control.Monad
 import Data.Foldable (fold)
+import Data.Monoid
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweets to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { cred :: Maybe FilePath , tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }

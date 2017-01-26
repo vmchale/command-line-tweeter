@@ -1,5 +1,5 @@
 name:                clit
-version:             0.2.2.3
+version:             0.2.2.4
 synopsis:            Post tweets from stdin
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -28,7 +28,7 @@ library
                      , authenticate-oauth
                      , bytestring
                      , split
-                     , optparse-applicative < 0.13.0.0
+                     , optparse-applicative 
                      , lens
                      , data-default
                      , text
