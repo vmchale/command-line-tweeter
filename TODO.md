@@ -4,7 +4,9 @@
 - [x] thread stuff nicely
 - [x] make it thread automatically?
 - [x] fix bug causing short things
+  - [ ] verify? 
 - [x] documentation
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
 - [x] improved developer ergonomics
+- [ ] let it install bash completions by itself? 

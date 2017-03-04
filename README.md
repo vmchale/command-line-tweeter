@@ -37,6 +37,10 @@ tweet --help
 
 This script powers the twitter account [@my\_build\_errors](https://twitter.com/my_build_errors) for instance. There's an example bash script for in `bash/example`
 
+### Completions
+
+The directory `bash/` has a `mkCompletions` script to allow command completions for your convenice.
+
 ## Library
 A haskell package is included. It's fairly easy to use once you have the credentials set up, with two main functions: `thread` and `basicTweet`: the first for threading your own tweets or replying to someone else's and the second for just tweeting.
 

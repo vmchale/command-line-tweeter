@@ -67,7 +67,7 @@ thread contents hs idNum num filepath = do
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
-    let f = \str i -> (flip tweetData filepath) (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i })
+    let f = \str i -> tweetData (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }) filepath
     let initial = f (head content)
     void $ foldr ((>=>) . f) initial (reverse . drop 1 $ content) $ fromMaybe 0 idNum
 
