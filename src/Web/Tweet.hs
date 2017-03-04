@@ -30,6 +30,8 @@ module Web.Tweet
     , urlString
     , getTimeline
     , showTimeline
+    , getProfile
+    , showProfile
     ) where
 
 import Network.HTTP.Client
@@ -99,7 +101,18 @@ tweetData tweet filepath = do
     request <- signRequest filepath $ initialRequest { method = "POST" }
     responseInt request manager
 
-showTimeline count color filepath = replace "\\n" "\n" . replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline)) <$> getTimeline count filepath
+getProfile screenName count filepath = do
+    let requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
+    manager <- newManager tlsManagerSettings
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
+    request <- signRequest filepath $ initialRequest { method = "GET"}
+    getTweets . BSL.unpack <$> responseBS request manager
+
+showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
+
+showTimeline count color filepath = showTweets color <$> getTimeline count filepath
+
+showTweets color = replace "\\n" "\n" . replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
     where fromRight (Right a) = a
 
 getTimeline count filepath = do

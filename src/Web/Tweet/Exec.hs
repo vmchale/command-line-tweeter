@@ -12,7 +12,7 @@ import Data.Monoid
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweets to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 
-data Command = Timeline { count :: Maybe Int , color :: Bool } | Send { tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
+data Command = Timeline { count :: Maybe Int , color :: Bool } | Send { tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] } | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -55,13 +55,16 @@ select (Program (Timeline Nothing True) Nothing) = putStrLn =<< showTimeline 8 T
 select (Program (Timeline Nothing True) (Just file)) = putStrLn =<< showTimeline 8 True file
 select (Program (Timeline (Just n) True) (Just file)) = putStrLn =<< showTimeline 8 True file
 select (Program (Timeline (Just n) True) Nothing) = putStrLn =<< showTimeline 8 True ".cred"
+select (Program (Profile (Just n) True name) (Just file)) = putStrLn =<< showProfile name n True file
+select (Program (Profile Nothing True name) (Just file)) = putStrLn =<< showProfile name 12 True file
 
 -- | Parser to return a program datatype
 program :: Parser Program
 program = Program
     <$> (hsubparser
         (command "send" (info tweet (progDesc "Send a tweet"))
-        <> command "view" (info timeline (progDesc "Get your timeline"))))
+        <> command "view" (info timeline (progDesc "Get your timeline"))
+        <> command "user" (info profile (progDesc "Get a user's profile"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -79,6 +82,21 @@ timeline = Timeline
         (long "color"
         <> short 'l'
         <> help "Display timeline with colorized terminal output.")
+
+profile :: Parser Command
+profile = Profile
+    <$> (optional $ read <$> strOption
+        (long "count"
+        <> short 'n'
+        <> metavar "NUM"
+        <> help "Number of tweets to fetch, default 12"))
+    <*> switch
+        (long "color"
+        <> short 'l'
+        <> help "Whether to display profile with colorized terminal output")
+    <*> argument str
+        (metavar "SCREEN_NAME"
+        <> help "Screen name of user you want to view.")
 
 tweet :: Parser Command
 tweet = Send

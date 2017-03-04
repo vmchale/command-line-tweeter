@@ -16,7 +16,7 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 --toUnicode "\u00e9" = 
 
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((user,content):rest) = ((show . yellow . text $ user) <> ":\n    " <> content <> "\n") <> (displayTimeline rest)
+displayTimelineColor ((user,content):rest) = ((show . yellow . text $ user) <> ":\n    " <> content <> "\n") <> (displayTimelineColor rest)
 displayTimelineColor [] = []
 
 displayTimeline :: Timeline -> String
