@@ -11,3 +11,4 @@
 - [x] improved developer ergonomics
 - [ ] let it install bash completions by itself? 
 - [ ] get/process your timeline
+  - [ ] parse returns module?

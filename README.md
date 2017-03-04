@@ -23,19 +23,37 @@ wget -qO- https://get.haskellstack.org/ | sh
 Then type `stack install` in the directory and it will generate an executable called `tweet`, which is what we want.
 
 ## Use
+
+### Sending tweets
 To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 
 ```
-YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet
+YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet send
 ```
 
-The `tweet` executable reads from stdIn as its only behavior, but you can view the options (replies, number of tweets to thread, etc.) with
+The `tweet` executable reads from stdIn only, but you can view the options (replies, number of tweets to thread, etc.) with
 
 ```
 tweet --help
 ```
 
 This script powers the twitter account [@my\_build\_errors](https://twitter.com/my_build_errors) for instance. There's an example bash script for in `bash/example`
+
+### Viewing your timeline
+
+You can also use
+
+```
+tweet view
+```
+
+or 
+
+```
+tweet view --color
+```
+
+to view your own timeline.
 
 ### Completions
 

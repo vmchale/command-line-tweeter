@@ -28,6 +28,8 @@ module Web.Tweet
     , signRequest
     -- * Functions to generate a URL string from a `Tweet`
     , urlString
+    , getTimeline
+    , showTimeline
     ) where
 
 import Network.HTTP.Client
@@ -46,6 +48,7 @@ import Data.Maybe
 import Control.Lens
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
+import Data.List.Utils
 
 -- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
 -- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
@@ -94,18 +97,27 @@ tweetData tweet filepath = do
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "POST" }
-    response request manager
+    responseInt request manager
 
-getTimeline :: Int -> FilePath -> IO Response
+showTimeline count color filepath = replace "\\n" "\n" . replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline)) <$> getTimeline count filepath
+    where fromRight (Right a) = a
+
 getTimeline count filepath = do
     let requestString = "?count=" ++ (show count)
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/home_timeline.json" ++ requestString)
-    response request manager
+    request <- signRequest filepath $ initialRequest { method = "GET" }
+    getTweets . BSL.unpack <$> responseBS request manager
+
+responseBS :: Request -> Manager -> IO BSL.ByteString
+responseBS request manager = do
+    response <- httpLbs request manager
+    putStrLn $ "The status code was: " ++ show (statusCode $ responseStatus response)
+    pure . responseBody $ response
 
 -- | print output of a request and return status id as an `Int`. 
-response :: Request -> Manager -> IO Int
-response request manager = do
+responseInt :: Request -> Manager -> IO Int
+responseInt request manager = do
     response <- httpLbs request manager
     putStrLn $ "The status code was: " ++ show (statusCode $ responseStatus response)
     BSL.putStrLn $ responseBody response
