@@ -22,6 +22,12 @@ data Tweet = Tweet
     , _replyID  :: Maybe Int
     } deriving (Generic, Default)
 
+data Timeline = Timeline
+    { _screenName :: String
+    , _includeRTs :: Maybe Bool
+    , _count :: Int
+    }
+
 makeLenses ''Tweet
 
 instance ToJSON Tweet where

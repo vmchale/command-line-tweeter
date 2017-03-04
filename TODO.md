@@ -10,3 +10,4 @@
 - [x] force functions to tweet only data of type Tweet
 - [x] improved developer ergonomics
 - [ ] let it install bash completions by itself? 
+- [ ] get/process your timeline

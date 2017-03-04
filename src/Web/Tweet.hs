@@ -96,6 +96,13 @@ tweetData tweet filepath = do
     request <- signRequest filepath $ initialRequest { method = "POST" }
     response request manager
 
+getTimeline :: Int -> FilePath -> IO Response
+getTimeline count filepath = do
+    let requestString = "?count=" ++ (show count)
+    manager <- newManager tlsManagerSettings
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/home_timeline.json" ++ requestString)
+    response request manager
+
 -- | print output of a request and return status id as an `Int`. 
 response :: Request -> Manager -> IO Int
 response request manager = do
