@@ -35,34 +35,34 @@ exec = execParser opts >>= select
 
 -- | Executes program
 select :: Program -> IO ()
-select (Program (Send (Just n) Nothing Nothing) Nothing) = fromStdIn n ".cred"
-select (Program (Send Nothing Nothing Nothing) Nothing) = fromStdIn 4 ".cred"
+select (Program (Send (Just n) Nothing Nothing) Nothing) = fromStdIn n "~/.cred"
+select (Program (Send Nothing Nothing Nothing) Nothing) = fromStdIn 4 "~/.cred"
 select (Program (Send (Just n) Nothing Nothing) (Just file))  = fromStdIn n file
 select (Program (Send Nothing Nothing Nothing) (Just file) ) = fromStdIn 4 file
-select (Program (Send (Just n) (Just id) (Just handles)) Nothing) = threadStdIn handles (read id) n ".cred"
+select (Program (Send (Just n) (Just id) (Just handles)) Nothing) = threadStdIn handles (read id) n "~/.cred"
 select (Program (Send (Just n) (Just id) (Just handles)) (Just file)) = threadStdIn handles (pure . read $ id) n file
 select (Program (Send Nothing (Just id) (Just handles)) (Just file))  = threadStdIn handles (pure . read $ id) 4 file
-select (Program (Send (Just n) (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) n ".cred"
-select (Program (Send Nothing (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) 4 ".cred"
-select (Program (Send Nothing (Just id) (Just handles)) Nothing) = threadStdIn handles (pure . read $ id) 4 ".cred"
+select (Program (Send (Just n) (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) n "~/.cred"
+select (Program (Send Nothing (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) 4 "~/.cred"
+select (Program (Send Nothing (Just id) (Just handles)) Nothing) = threadStdIn handles (pure . read $ id) 4 "~/.cred"
 select (Program (Send (Just n) (Just id) Nothing) (Just file)) = threadStdIn [] (pure . read $ id) n file
 select (Program (Send (Just n) Nothing (Just handles)) (Just file)) = threadStdIn handles Nothing n file
-select (Program (Timeline Nothing False) Nothing) = putStrLn =<< showTimeline 8 False ".cred"
+select (Program (Timeline Nothing False) Nothing) = putStrLn =<< showTimeline 8 False "~/.cred"
 select (Program (Timeline Nothing False) (Just file)) = putStrLn =<< showTimeline 8 False file
 select (Program (Timeline (Just n) False) (Just file)) = putStrLn =<< showTimeline 8 False file
-select (Program (Timeline (Just n) False) Nothing) = putStrLn =<< showTimeline 8 False ".cred"
-select (Program (Timeline Nothing True) Nothing) = putStrLn =<< showTimeline 8 True ".cred"
+select (Program (Timeline (Just n) False) Nothing) = putStrLn =<< showTimeline 8 False "~/.cred"
+select (Program (Timeline Nothing True) Nothing) = putStrLn =<< showTimeline 8 True "~/.cred"
 select (Program (Timeline Nothing True) (Just file)) = putStrLn =<< showTimeline 8 True file
 select (Program (Timeline (Just n) True) (Just file)) = putStrLn =<< showTimeline 8 True file
-select (Program (Timeline (Just n) True) Nothing) = putStrLn =<< showTimeline 8 True ".cred"
+select (Program (Timeline (Just n) True) Nothing) = putStrLn =<< showTimeline 8 True "~/.cred"
 select (Program (Profile (Just n) True name) (Just file)) = putStrLn =<< showProfile name n True file
 select (Program (Profile Nothing True name) (Just file)) = putStrLn =<< showProfile name 12 True file
-select (Program (Profile (Just n) True name) Nothing) = putStrLn =<< showProfile name n True ".cred"
-select (Program (Profile Nothing True name) Nothing) = putStrLn =<< showProfile name 12 True ".cred"
+select (Program (Profile (Just n) True name) Nothing) = putStrLn =<< showProfile name n True "~/.cred"
+select (Program (Profile Nothing True name) Nothing) = putStrLn =<< showProfile name 12 True "~/.cred"
 select (Program (Profile (Just n) False name) (Just file)) = putStrLn =<< showProfile name n False file
 select (Program (Profile Nothing False name) (Just file)) = putStrLn =<< showProfile name 12 False file
-select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False ".cred"
-select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False ".cred"
+select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False "~/.cred"
+select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False "~/.cred"
 
 -- | Parser to return a program datatype
 program :: Parser Program
