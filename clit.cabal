@@ -1,5 +1,5 @@
 name:                clit
-version:             0.3.0.2
+version:             0.3.0.3
 synopsis:            Post tweets from stdin
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -13,6 +13,11 @@ build-type:          Simple
 stability:           stable
 extra-source-files:  README.md, stack.yaml, bash/mkCompletions, bash/example
 cabal-version:       >=1.10
+
+Flag llvm-fast {
+  Description: Enable build with llvm backend
+  Default: False
+}
 
 library
   hs-source-dirs:      src
@@ -41,7 +46,10 @@ library
 executable tweet
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  if flag(llvm-fast)
+    ghc-options:       -threaded -rtsopts -with-rtsopts=-N -fllvm -optlo-O3 -O3
+  else
+    ghc-options:       -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , clit 
   default-language:    Haskell2010

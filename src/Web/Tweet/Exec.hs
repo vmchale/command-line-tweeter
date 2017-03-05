@@ -57,6 +57,12 @@ select (Program (Timeline (Just n) True) (Just file)) = putStrLn =<< showTimelin
 select (Program (Timeline (Just n) True) Nothing) = putStrLn =<< showTimeline 8 True ".cred"
 select (Program (Profile (Just n) True name) (Just file)) = putStrLn =<< showProfile name n True file
 select (Program (Profile Nothing True name) (Just file)) = putStrLn =<< showProfile name 12 True file
+select (Program (Profile (Just n) True name) Nothing) = putStrLn =<< showProfile name n True ".cred"
+select (Program (Profile Nothing True name) Nothing) = putStrLn =<< showProfile name 12 True ".cred"
+select (Program (Profile (Just n) False name) (Just file)) = putStrLn =<< showProfile name n False file
+select (Program (Profile Nothing False name) (Just file)) = putStrLn =<< showProfile name 12 False file
+select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False ".cred"
+select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False ".cred"
 
 -- | Parser to return a program datatype
 program :: Parser Program
