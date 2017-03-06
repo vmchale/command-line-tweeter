@@ -32,6 +32,8 @@ module Web.Tweet
     , showTimeline
     , getProfile
     , showProfile
+    , getDMs
+    , showDMs
     ) where
 
 import Network.HTTP.Client
@@ -65,16 +67,16 @@ thread contents hs idNum num filepath = do
         Nothing -> case content of
             [] -> pure ()
             [x] -> void $ basicTweet x filepath
-            (x:xs) -> do
-                firstId <- basicTweet x filepath
-                thread' xs hs (Just firstId) num filepath
+            y@(x:xs) -> do
+                thread' y hs (Just 0) num filepath
 
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
     let f = \str i -> tweetData (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }) filepath
     let initial = f (head content)
-    void $ foldr ((>=>) . f) initial (reverse . drop 1 $ content) $ fromMaybe 0 idNum
+    last <- foldr ((>=>) . f) initial (content) $ fromMaybe 0 idNum
+    deleteTweet last filepath
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
 --
@@ -108,12 +110,21 @@ getProfile screenName count filepath = do
     request <- signRequest filepath $ initialRequest { method = "GET"}
     getTweets . BSL.unpack <$> responseBS request manager
 
+showDMs count color filepath = showTweets color <$> getDMs count filepath
+
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
 
-showTweets color = replace "\\n" "\n" . replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
+showTweets color = {-- replace "\\n" "\n" . --} replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
     where fromRight (Right a) = a
+
+getDMs count filepath = do
+    let requestString = "?count=" ++ (show count)
+    manager <- newManager tlsManagerSettings
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/direct_messages.json" ++ requestString)
+    request <- signRequest filepath $ initialRequest { method = "GET" }
+    getTweets . BSL.unpack <$> responseBS request manager
 
 getTimeline count filepath = do
     let requestString = "?count=" ++ (show count)
@@ -121,6 +132,12 @@ getTimeline count filepath = do
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/home_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET" }
     getTweets . BSL.unpack <$> responseBS request manager
+
+deleteTweet id filepath = do
+    manager <- newManager tlsManagerSettings
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/destroy/" ++ (show id) ++ ".json")
+    request <- signRequest filepath $ initialRequest { method = "GET" }
+    void $ responseBS request manager
 
 responseBS :: Request -> Manager -> IO BSL.ByteString
 responseBS request manager = do

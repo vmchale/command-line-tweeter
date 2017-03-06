@@ -41,6 +41,7 @@ library
                      , megaparsec
                      , ansi-wl-pprint
                      , MissingH
+                     , directory
   default-language:    Haskell2010
 
 executable tweet

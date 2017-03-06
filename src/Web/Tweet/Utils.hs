@@ -15,6 +15,9 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 --toUnicode :: Parser String
 --toUnicode "\u00e9" = 
 
+parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
+    where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])
+
 displayTimelineColor :: Timeline -> String
 displayTimelineColor ((user,content):rest) = ((show . yellow . text $ user) <> ":\n    " <> content <> "\n") <> (displayTimelineColor rest)
 displayTimelineColor [] = []
