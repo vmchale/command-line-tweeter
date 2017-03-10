@@ -73,6 +73,7 @@ thread contents hs idNum num filepath = do
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread' content hs idNum num filepath = do
+    -- fix the stuff with the handles.
     let f = \str i -> tweetData (Tweet { _status = str, _trimUser = True, _handles = hs, _replyID = if i == 0 then Nothing else Just i }) filepath
     let initial = f (head content)
     last <- foldr ((>=>) . f) initial (content) $ fromMaybe 0 idNum
@@ -116,7 +117,7 @@ showProfile screenName count color filepath = showTweets color <$> getProfile sc
 
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
 
-showTweets color = {-- replace "\\n" "\n" . --} replace "\\/" "/" . fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
+showTweets color = fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
     where fromRight (Right a) = a
 
 getDMs count filepath = do

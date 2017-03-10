@@ -26,11 +26,11 @@ displayTimeline :: Timeline -> String
 displayTimeline ((user,content):rest) = (user <> ":\n    " <> content <> "\n") <> (displayTimeline rest) -- color should be configurable at least! 
 displayTimeline [] = []
 
--- | Get tweets from a response, disgarding all but author and 
-getTweets str = zip <$> (parse (filterStr "screen_name") "" str) <*> (parse (filterStr "text") "" str)
+-- | Get tweets from a response, disgarding all but author and content
+getTweets str = zip <$> (parse (filterStr "name") "" str) <*> (parse (filterStr "text") "" str)
 
 filterTl :: Parser Timeline
-filterTl = zip <$> (filterStr "screen_name") <*> (filterStr "text")
+filterTl = zip <$> (filterStr "name") <*> (filterStr "text")
 
 filterStr :: String -> Parser [String]
 filterStr str = (fmap (filter (/=""))) . many $
@@ -41,9 +41,14 @@ filterTag str = do
     string $ "\"" <> str <> "\""
     char ':'
     char '\"'
-    want <- many $ noneOf "\""
+    want <- many $ noneOf "\\\"" <|> specialChar '\"' <|> specialChar '/' <|> specialChar 'n' <|> specialChar 'u'
     char '\"'
     pure want
+
+specialChar :: Char -> Parser Char
+specialChar c = do
+    string $ "\\" ++ pure c
+    if c /= '\n' then pure c else pure '\n'
 
 -- | helper function to get the key as read from a file
 keyLinePie :: String -> String
