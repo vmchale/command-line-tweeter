@@ -13,7 +13,7 @@ import System.Directory
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweets to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 
-data Command = Timeline { count :: Maybe Int , color :: Bool } | Send { tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] } | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
+data Command = Timeline { count :: Maybe Int , color :: Bool } | Send { tweets :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] } | Profile { count :: Maybe Int , color :: Bool , screenName :: String } | Raw { screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -64,6 +64,12 @@ select (Program (Profile (Just n) False name) (Just file)) = putStrLn =<< showPr
 select (Program (Profile Nothing False name) (Just file)) = putStrLn =<< showProfile name 12 False file
 select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False  =<< (++ "/.cred") <$> getHomeDirectory
+select (Program (Raw name) Nothing) = do
+    raw' <- getRaw name =<< (++ "/.cred") <$> getHomeDirectory
+    sequence_ $ putStrLn <$> [raw']
+select (Program (Raw name) (Just file)) = do
+    raw' <- getRaw name file
+    sequence_ $ putStrLn <$> [raw'] --fix this idk
 
 -- | Parser to return a program datatype
 program :: Parser Program
@@ -71,7 +77,8 @@ program = Program
     <$> (hsubparser
         (command "send" (info tweet (progDesc "Send a tweet"))
         <> command "view" (info timeline (progDesc "Get your timeline"))
-        <> command "user" (info profile (progDesc "Get a user's profile"))))
+        <> command "user" (info profile (progDesc "Get a user's profile"))
+        <> command "raw" (info raw (progDesc "Grab tweets en masse."))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -89,6 +96,12 @@ timeline = Timeline
         (long "color"
         <> short 'l'
         <> help "Display timeline with colorized terminal output.")
+
+raw :: Parser Command
+raw = Raw
+  <$> argument str
+    (metavar "SCREEN_NAME"
+    <> help "Screen name of user whose tweets you want in bulk.")
 
 profile :: Parser Command
 profile = Profile

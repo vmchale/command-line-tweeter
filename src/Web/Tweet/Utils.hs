@@ -5,9 +5,11 @@ import qualified Data.ByteString.Char8 as BS
 import Text.Megaparsec.String
 import Text.Megaparsec
 import Data.Monoid
+import Data.Maybe
 import Web.Tweet.Types
 import Control.Monad
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
+import Control.Lens.Tuple
 
 -- example text
 -- Emma Watson, seins nus dans \u00abVanity Fair\u00bb, f\u00e9ministe ou hypocrite? \u27a1\ufe0f https:\/\/t.co\/MIPx1EpRSK https:\/\/t.co\/uSnLayoPi6
@@ -18,31 +20,55 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
     where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])
 
-displayTimelineColor :: Timeline -> String
-displayTimelineColor ((user,content):rest) = ((show . yellow . text $ user) <> ":\n    " <> content <> "\n") <> (displayTimelineColor rest)
-displayTimelineColor [] = []
-
 displayTimeline :: Timeline -> String
-displayTimeline ((user,content):rest) = (user <> ":\n    " <> content <> "\n") <> (displayTimeline rest) -- color should be configurable at least! 
+displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♡ " {-- 💛--} <> fave <> "\n" <> (displayTimeline rest)
 displayTimeline [] = []
 
--- | Get tweets from a response, disgarding all but author and content
-getTweets str = zip <$> (parse (filterStr "name") "" str) <*> (parse (filterStr "text") "" str)
+displayTimelineColor :: Timeline -> String
+displayTimelineColor ((user,content,fave,rts):rest) = ((show . yellow . text $ user) <> ":\n    " <> content) <> "\n    " <> (show . red . text $ "♥ ") {-- ♡💛--} <> fave <> (show . green . text $ " ♺ ") <> rts <> "\n" <> (displayTimelineColor rest) -- 
+displayTimelineColor [] = []
 
-filterTl :: Parser Timeline
-filterTl = zip <$> (filterStr "name") <*> (filterStr "text")
+-- | Get tweets from a response, disgarding all but author, favorites, retweets, and content
+getTweets = parse parseTweet "" 
 
-filterStr :: String -> Parser [String]
-filterStr str = (fmap (filter (/=""))) . many $
-    filterTag str <|> (const "" <$> anyChar)
+parseTweet :: Parser Timeline
+parseTweet = many (try getData <|> (const ("","","","") <$> eof))
+
+getData :: Parser (String, String, String, String)
+getData = do
+    text <- filterStr "text"
+    userMentions <- filterStr "user_mentions"
+    name <- if userMentions == "[]" then filterStr "name" else filterStr "name" >> filterStr "name"
+    isQuote <- filterStr "is_quote_status"
+    case isQuote of
+        "false" -> do
+            rts <- filterStr "retweet_count"
+            faves <- filterStr "favorite_count"
+            pure (name, text, faves, rts)
+        "true" -> do
+            rts <- filterStr "retweet_count" >> filterStr "retweet_count"
+            faves <- filterStr "favorite_count"
+            pure (name, text, faves, rts)
+
+-- | Gets only content; useful for markov chain bots.
+getContentForBot = parse (filterStr "text") ""
+
+--filterTl :: Parser Timeline
+--filterTl = zip <$> (filterStr "name") <*> (filterStr "text")
+
+filterStr :: String -> Parser String
+filterStr str = do
+    many $ try $ anyChar >> notFollowedBy (string ("\"" <> str <> "\":"))
+    char ','
+    filterTag str
 
 filterTag :: String -> Parser String
 filterTag str = do
-    string $ "\"" <> str <> "\""
-    char ':'
-    char '\"'
-    want <- many $ noneOf "\\\"" <|> specialChar '\"' <|> specialChar '/' <|> specialChar 'n' <|> specialChar 'u'
-    char '\"'
+    string $ "\"" <> str <> "\":"
+    open <- optional $ char '\"'
+    let forbidden = if (isJust open) then "\\\"" else "\\\","
+    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> specialChar 'n' <|> specialChar 'u'
+    --optional $ char '\"'
     pure want
 
 specialChar :: Char -> Parser Char

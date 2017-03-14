@@ -34,6 +34,7 @@ module Web.Tweet
     , showProfile
     , getDMs
     , showDMs
+    , getRaw
     ) where
 
 import Network.HTTP.Client
@@ -104,21 +105,30 @@ tweetData tweet filepath = do
     request <- signRequest filepath $ initialRequest { method = "POST" }
     responseInt request manager
 
+getRaw screenName filepath = do
+    let requestString = "?screen_name=" ++ screenName ++ "&count=3200"
+    manager <- newManager tlsManagerSettings
+    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
+    request <- signRequest filepath $ initialRequest { method = "GET"}
+    let fromRight (Right a) = a
+    fromRight . getContentForBot . BSL.unpack <$> responseBS request manager
+
 getProfile screenName count filepath = do
     let requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET"}
+    responseBS request manager
     getTweets . BSL.unpack <$> responseBS request manager
 
 showDMs count color filepath = showTweets color <$> getDMs count filepath
 
+showProfile :: Show t => [Char] -> t -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
 
-showTweets color = fromRight . (fmap (if color then displayTimelineColor else displayTimeline))
-    where fromRight (Right a) = a
+showTweets color = (either show id) . (fmap (if color then displayTimelineColor else displayTimeline))
 
 getDMs count filepath = do
     let requestString = "?count=" ++ (show count)
