@@ -50,12 +50,6 @@ getData = do
             faves <- filterStr "favorite_count"
             pure (name, text, faves, rts)
 
--- | Gets only content; useful for markov chain bots.
-getContentForBot = parse (filterStr "text") ""
-
---filterTl :: Parser Timeline
---filterTl = zip <$> (filterStr "name") <*> (filterStr "text")
-
 filterStr :: String -> Parser String
 filterStr str = do
     many $ try $ anyChar >> notFollowedBy (string ("\"" <> str <> "\":"))
@@ -68,7 +62,6 @@ filterTag str = do
     open <- optional $ char '\"'
     let forbidden = if (isJust open) then "\\\"" else "\\\","
     want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> specialChar 'n' <|> specialChar 'u'
-    --optional $ char '\"'
     pure want
 
 specialChar :: Char -> Parser Char

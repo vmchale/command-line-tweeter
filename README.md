@@ -24,6 +24,20 @@ Then type `stack install` in the directory and it will generate an executable ca
 
 ## Use
 
+### View Profiles and timelines
+
+To get your timeline, simply type:
+
+```
+tweet view
+```
+
+To view a user's profile, type e.g.
+
+```
+tweet user pinepapplesmear --color
+```
+
 ### Sending tweets
 To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 

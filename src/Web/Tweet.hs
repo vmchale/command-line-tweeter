@@ -51,6 +51,7 @@ import Control.Monad
 import Data.List.Split (chunksOf)
 import Data.Maybe
 import Control.Lens
+import Control.Lens.Tuple
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
 import Data.List.Utils
@@ -68,8 +69,7 @@ thread contents hs idNum num filepath = do
         Nothing -> case content of
             [] -> pure ()
             [x] -> void $ basicTweet x filepath
-            y@(x:xs) -> do
-                thread' y hs (Just 0) num filepath
+            y@(x:xs) -> thread' y hs (Just 0) num filepath
 
 -- | Helper function to make `thread` easier to write. 
 thread' :: [String] -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
@@ -111,7 +111,7 @@ getRaw screenName filepath = do
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET"}
     let fromRight (Right a) = a
-    fromRight . getContentForBot . BSL.unpack <$> responseBS request manager
+    map (view _2) . fromRight .  getTweets . BSL.unpack <$> responseBS request manager
 
 getProfile screenName count filepath = do
     let requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
@@ -147,21 +147,22 @@ getTimeline count filepath = do
 deleteTweet id filepath = do
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/destroy/" ++ (show id) ++ ".json")
-    request <- signRequest filepath $ initialRequest { method = "GET" }
+    request <- signRequest filepath $ initialRequest { method = "POST" }
     void $ responseBS request manager
 
 responseBS :: Request -> Manager -> IO BSL.ByteString
 responseBS request manager = do
     response <- httpLbs request manager
-    putStrLn $ "The status code was: " ++ show (statusCode $ responseStatus response)
+    let code = statusCode $ responseStatus response
+    putStr $ if (code == 200) then "" else "failed :(\n error code: " ++ (show code) ++ "\n"
     pure . responseBody $ response
 
 -- | print output of a request and return status id as an `Int`. 
 responseInt :: Request -> Manager -> IO Int
 responseInt request manager = do
     response <- httpLbs request manager
-    putStrLn $ "The status code was: " ++ show (statusCode $ responseStatus response)
-    BSL.putStrLn $ responseBody response
+    let code = statusCode $ responseStatus response
+    putStrLn $ if (code == 200) then "POST succesful!" else "failed :(\n error code: " ++ (show code)
     return $ (read . (takeWhile (/=',')) . (drop 52)) (BSL.unpack $ responseBody response)
 
 -- | Convert a tweet to a percent-encoded url for querying an API
