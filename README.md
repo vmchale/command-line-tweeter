@@ -1,6 +1,6 @@
 # Command Line Interface Tweeter
 
-![alt text](https://raw.githubusercontent.com/vmchale/command-line-tweeter/master/screenshot.png =300px "Displaying a user timeline in a terminal.")
+![alt text](https://raw.githubusercontent.com/vmchale/command-line-tweeter/master/screenshot.png "Displaying a user timeline in a terminal." =300px)
 ## Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
 
