@@ -21,7 +21,7 @@ parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "
     where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])
 
 displayTimeline :: Timeline -> String
-displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♡ " {-- 💛--} <> fave <> "\n" <> (displayTimeline rest)
+displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " {-- ♡💛--} <> fave <> " ♺ " <> rts <> "\n" <> (displayTimeline rest) -- 
 displayTimeline [] = []
 
 displayTimelineColor :: Timeline -> String
