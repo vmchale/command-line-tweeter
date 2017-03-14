@@ -46,7 +46,7 @@ tweet user pinepapplesmear --color
 To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 
 ```
-YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet send
+YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet input
 ```
 
 The `tweet` executable reads from stdIn only, but you can view the options (replies, number of tweets to thread, etc.) with
