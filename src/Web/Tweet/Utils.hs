@@ -3,6 +3,7 @@ module Web.Tweet.Utils where
 
 import qualified Data.ByteString.Char8 as BS
 import Text.Megaparsec.String
+import Text.Megaparsec.Lexer as L
 import Text.Megaparsec
 import Data.Monoid
 import Data.Maybe
@@ -61,13 +62,28 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if (isJust open) then "\\\"" else "\\\","
-    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> specialChar 'n' <|> specialChar 'u'
+    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- specialChar 'u'
     pure want
+
+newlineChar :: Parser Char
+newlineChar = do
+    string "\\n"
+    pure '\n'
+
+unicodeChar :: Parser Char
+unicodeChar = do
+    string "\\u"
+    num <- fromHex <$> count 4 anyChar
+    pure . toEnum . fromIntegral $ num
 
 specialChar :: Char -> Parser Char
 specialChar c = do
     string $ "\\" ++ pure c
-    if c /= '\n' then pure c else pure '\n'
+    pure c
+
+fromHex :: String -> Integer
+fromHex = fromRight . (parse (L.hexadecimal :: Parser Integer) "")
+    where fromRight (Right a) = a
 
 -- | helper function to get the key as read from a file
 keyLinePie :: String -> String
