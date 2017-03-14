@@ -14,7 +14,10 @@ tok-sec: TOKEN_SECRET_HERE
 
 ## Installation
 
-Install [haskell stack](https://docs.haskellstack.org/en/stable/README/#how-to-install); on unix systems this is as simple as
+If you're on Linux/Windows the best way is probably to download the binaries
+from the releases page [here](https://github.com/vmchale/command-line-tweeter/releases).
+
+To build from source, install [haskell stack](https://docs.haskellstack.org/en/stable/README/#how-to-install); on unix systems this is as simple as
 
 ```
 wget -qO- https://get.haskellstack.org/ | sh
