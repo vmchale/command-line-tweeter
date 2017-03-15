@@ -44,7 +44,7 @@ import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import qualified Data.Text as T
 import Data.Text.Encoding
-import Data.Char (toLower)
+import Data.Char
 import Web.Tweet.Types
 import Web.Tweet.Utils
 import Control.Monad
@@ -55,6 +55,7 @@ import Control.Lens.Tuple
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
 import Data.List.Utils
+import qualified Data.Text as T
 
 -- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
 -- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
@@ -166,6 +167,8 @@ responseBS request manager = do
     response <- httpLbs request manager
     let code = statusCode $ responseStatus response
     putStr $ if (code == 200) then "" else "failed :(\n error code: " ++ (show code) ++ "\n"
+    -- print $ generalCategory ('📚')
+    -- print $ (toEnum (0x1F48C) :: Char) -- (0xF079)
     pure . responseBody $ response
 
 -- | print output of a request and return status id as an `Int`. 

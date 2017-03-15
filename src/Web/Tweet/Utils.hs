@@ -5,6 +5,7 @@ import qualified Data.ByteString.Char8 as BS
 import Text.Megaparsec.String
 import Text.Megaparsec.Lexer as L
 import Text.Megaparsec
+import Data.Char
 import Data.Monoid
 import Data.Maybe
 import Web.Tweet.Types
@@ -72,12 +73,19 @@ newlineChar = do
     string "\\n"
     pure '\n'
 
+--emoji :: Parser Char
+--emoji = do
+--    string "\\u"
+    --d83d dc8c 💌
+
 -- | Parser for unicode; twitter will give us something like "/u320a"
 unicodeChar :: Parser Char
 unicodeChar = do
     string "\\u"
-    num <- fromHex <$> count 4 anyChar
+    num <- fromHex . filterEmoji <$> count 4 anyChar
     pure . toEnum . fromIntegral $ num
+
+filterEmoji str = if head str == 'd' then "FFFD" else str
 
 -- | Parse escaped characters
 specialChar :: Char -> Parser Char
