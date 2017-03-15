@@ -1,6 +1,7 @@
 -- | Provides IO action that parses command line options and tweetInputs from stdin
 module Web.Tweet.Exec ( exec
-                      , Program (Program)) where
+                      , Program (..)
+                      , Command (..)) where
 
 import Web.Tweet
 import Options.Applicative
@@ -14,6 +15,7 @@ import System.Directory
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 
+-- | Data type for a 
 data Command = Timeline { count :: Maybe Int , color :: Bool } 
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] } 
     | Profile { count :: Maybe Int , color :: Bool , screenName :: String } 
@@ -24,6 +26,7 @@ data Command = Timeline { count :: Maybe Int , color :: Bool }
 fromStdIn :: Int -> FilePath -> IO ()
 fromStdIn = threadStdIn [] Nothing
 
+-- | Tweet string given to us, as parsed from the command line
 fromCLI :: String -> Int -> FilePath -> IO ()
 fromCLI str = thread str [] Nothing
 
@@ -42,7 +45,7 @@ exec = execParser opts >>= select
             <> progDesc "SendInput from stdin!"
             <> header "clit - a Command Line Interface SendInputer")
 
--- | Executes program
+-- | Executes program given parsed `Program`
 select :: Program -> IO ()
 select (Program (Send (Just n) Nothing Nothing input) Nothing) = fromCLI input n =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Send Nothing Nothing Nothing input) Nothing) = fromCLI input 15  =<< (++ "/.cred") <$> getHomeDirectory
@@ -106,6 +109,7 @@ program = Program
         <> metavar "CREDENTIALS"
         <> help "path to credentials"))
 
+-- | Parser for the view subcommand
 timeline :: Parser Command
 timeline = Timeline
     <$> (optional $ read <$> strOption
@@ -118,12 +122,14 @@ timeline = Timeline
         <> short 'l'
         <> help "Display timeline with colorized terminal output.")
 
+-- | Parser for the raw subcommand
 raw :: Parser Command
 raw = Raw
   <$> argument str
     (metavar "SCREEN_NAME"
     <> help "Screen name of user whose tweetInputs you want in bulk.")
 
+-- | Parser for the user subcommand
 profile :: Parser Command
 profile = Profile
     <$> (optional $ read <$> strOption
@@ -139,6 +145,7 @@ profile = Profile
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
 
+-- | Parser for the send subcommand
 tweet :: Parser Command
 tweet = Send
     <$> (optional $ read <$> strOption
@@ -150,15 +157,16 @@ tweet = Send
         (long "reply"
         <> short 'r'
         <> help "id of status to reply to - be sure to include their handle, e.g. @my_build_errors"))
-    <*> (optional $ (some $ strOption $
+    <*> (optional (some $ strOption $
         (long "handle"
         <> short 'h'
         <> metavar "HANDLE1"
         <> help "Handles to include in replies")))
-    <*> (intercalate " " <$> (some $ argument str
+    <*> (unwords <$> (some $ argument str
         (metavar "TEXT"
         <> help "text of tweet to be sent")))
 
+-- | Parser for the input command
 tweetInput :: Parser Command
 tweetInput = SendInput
     <$> (optional $ read <$> strOption

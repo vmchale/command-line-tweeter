@@ -1,5 +1,5 @@
 name:                clit
-version:             0.4.0.1
+version:             0.4.0.2
 synopsis:            Post tweets from stdin
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -11,7 +11,7 @@ copyright:           2016 Vanessa McHale
 category:            Web
 build-type:          Simple
 stability:           stable
-extra-source-files:  README.md, stack.yaml, bash/mkCompletions, bash/example
+extra-source-files:  README.md, stack.yaml, bash/mkCompletions
 cabal-version:       >=1.10
 
 Flag llvm-fast {

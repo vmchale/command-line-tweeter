@@ -12,29 +12,28 @@ import Control.Monad
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 import Control.Lens.Tuple
 
--- example text
--- Emma Watson, seins nus dans \u00abVanity Fair\u00bb, f\u00e9ministe ou hypocrite? \u27a1\ufe0f https:\/\/t.co\/MIPx1EpRSK https:\/\/t.co\/uSnLayoPi6
---"screen_name":"C_mrmt"
---toUnicode :: Parser String
---toUnicode "\u00e9" = 
-
+-- `FIXME` 
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
     where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])
 
+-- | Display Timeline without color
 displayTimeline :: Timeline -> String
 displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " {-- ♡💛--} <> fave <> " ♺ " <> rts <> "\n" <> (displayTimeline rest) -- 
 displayTimeline [] = []
 
+-- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
 displayTimelineColor ((user,content,fave,rts):rest) = ((show . yellow . text $ user) <> ":\n    " <> content) <> "\n    " <> (show . red . text $ "♥ ") {-- ♡💛--} <> fave <> (show . green . text $ " ♺ ") <> rts <> "\n" <> (displayTimelineColor rest) -- 
 displayTimelineColor [] = []
 
--- | Get tweets from a response, disgarding all but author, favorites, retweets, and content
+-- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
 getTweets = parse parseTweet "" 
 
+-- | Parse some number of tweets
 parseTweet :: Parser Timeline
 parseTweet = many (try getData <|> (const ("","","","") <$> eof))
 
+-- | Parse a single tweet's: name, text, fave count, retweet count
 getData :: Parser (String, String, String, String)
 getData = do
     text <- filterStr "text"
@@ -51,12 +50,14 @@ getData = do
             faves <- filterStr "favorite_count"
             pure (name, text, faves, rts)
 
+-- | Throw out input until we get to a relevant tag.
 filterStr :: String -> Parser String
 filterStr str = do
     many $ try $ anyChar >> notFollowedBy (string ("\"" <> str <> "\":"))
     char ','
     filterTag str
 
+-- | Parse a field given its tag
 filterTag :: String -> Parser String
 filterTag str = do
     string $ "\"" <> str <> "\":"
@@ -65,22 +66,26 @@ filterTag str = do
     want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- specialChar 'u'
     pure want
 
+-- | Parse a newline
 newlineChar :: Parser Char
 newlineChar = do
     string "\\n"
     pure '\n'
 
+-- | Parser for unicode; twitter will give us something like "/u320a"
 unicodeChar :: Parser Char
 unicodeChar = do
     string "\\u"
     num <- fromHex <$> count 4 anyChar
     pure . toEnum . fromIntegral $ num
 
+-- | Parse escaped characters
 specialChar :: Char -> Parser Char
 specialChar c = do
     string $ "\\" ++ pure c
     pure c
 
+-- | Convert a string of four hexadecimal digits to an integer.
 fromHex :: String -> Integer
 fromHex = fromRight . (parse (L.hexadecimal :: Parser Integer) "")
     where fromRight (Right a) = a

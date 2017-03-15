@@ -105,6 +105,7 @@ tweetData tweet filepath = do
     request <- signRequest filepath $ initialRequest { method = "POST" }
     responseInt request manager
 
+-- | Get tweets (text only) for some user
 getRaw screenName filepath = do
     let requestString = "?screen_name=" ++ screenName ++ "&count=3200"
     manager <- newManager tlsManagerSettings
@@ -113,23 +114,30 @@ getRaw screenName filepath = do
     let fromRight (Right a) = a
     map (view _2) . fromRight .  getTweets . BSL.unpack <$> responseBS request manager
 
+-- | Get user profile given screen name and how many tweets to return
 getProfile screenName count filepath = do
     let requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET"}
-    responseBS request manager
+    responseBS request manager -- TODO
     getTweets . BSL.unpack <$> responseBS request manager
 
+-- | Show your DMs, given how many to return and whether or not to use color.
 showDMs count color filepath = showTweets color <$> getDMs count filepath
 
-showProfile :: Show t => [Char] -> t -> Bool -> FilePath -> IO String
+-- | Show a user profile given screen name, how many tweets to return (API
+-- maximum is 3200), and whether to print them in color.
+showProfile :: Show t => String -> t -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
+-- | Display user timeline
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
 
+-- | Display user timeline in color
 showTweets color = (either show id) . (fmap (if color then displayTimelineColor else displayTimeline))
 
+-- | Get user's DMs.
 getDMs count filepath = do
     let requestString = "?count=" ++ (show count)
     manager <- newManager tlsManagerSettings
@@ -137,6 +145,7 @@ getDMs count filepath = do
     request <- signRequest filepath $ initialRequest { method = "GET" }
     getTweets . BSL.unpack <$> responseBS request manager
 
+-- | Get a timeline
 getTimeline count filepath = do
     let requestString = "?count=" ++ (show count)
     manager <- newManager tlsManagerSettings
@@ -144,12 +153,14 @@ getTimeline count filepath = do
     request <- signRequest filepath $ initialRequest { method = "GET" }
     getTweets . BSL.unpack <$> responseBS request manager
 
+-- | Delete a tweet given its id
 deleteTweet id filepath = do
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/destroy/" ++ (show id) ++ ".json")
     request <- signRequest filepath $ initialRequest { method = "POST" }
     void $ responseBS request manager
 
+-- | Return HTTP request's result as a bytestring
 responseBS :: Request -> Manager -> IO BSL.ByteString
 responseBS request manager = do
     response <- httpLbs request manager

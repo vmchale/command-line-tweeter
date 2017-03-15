@@ -22,7 +22,7 @@ data Tweet = Tweet
     , _replyID  :: Maybe Int
     } deriving (Generic, Default)
 
--- | Stores data like (text, screenName, favoriteCount, retweetCount)
+-- | Stores data like (name, text, favoriteCount, retweetCount)
 type Timeline = [(String, String, String, String)]
 
 makeLenses ''Tweet

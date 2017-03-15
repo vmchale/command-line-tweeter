@@ -4,11 +4,17 @@
 - [x] thread stuff nicely
 - [x] make it thread automatically?
 - [x] fix bug causing short things
-  - [ ] verify? 
+  - [x] verify? 
+  - [x] fix parser bugs
+    - [ ] json extractor library? 
 - [x] documentation
+- [ ] shortcuts for color? since I end up using `show . yellow . text` so often! 
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
 - [x] improved developer ergonomics
+- [x] add support for unicode
+- [x] make cli interface nice/usable by humans
 - [ ] let it install bash completions by itself? 
+  - [x] parser with actual commands! 
 - [ ] get/process your timeline
-  - [ ] parse returns module?
+  - [x] parse returns module?
