@@ -11,10 +11,10 @@ import Data.Monoid
 import Data.Maybe
 import Web.Tweet.Types
 import Control.Monad
-import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 import Control.Lens.Tuple
 import Control.Lens hiding (noneOf)
 import Data.Function
+import Web.Tweet.Utils.Colors
 
 -- `FIXME` 
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
@@ -27,7 +27,7 @@ displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((user,content,fave,rts):rest) = ((show . yellow . text $ user) <> ":\n    " <> content) <> "\n    " <> (show . red . text $ "♥ ") {-- ♡💛--} <> fave <> (show . green . text $ " ♺ ") <> rts <> "\n\n" <> (displayTimelineColor rest) -- 
+displayTimelineColor ((user,content,fave,rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") {-- ♡💛--} <> fave <> (toGreen " ♺ ") <> rts <> "\n\n" <> (displayTimelineColor rest) -- 
 displayTimelineColor [] = []
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
@@ -35,7 +35,7 @@ getTweets = parse parseTweet ""
 
 -- | Parse some number of tweets
 parseTweet :: Parser Timeline
-parseTweet = many (try getData <|> (const ("","","","") <$> eof))
+parseTweet = concat <$> many (try getData <|> (const (pure ("","","","")) <$> eof))
 
 hits = sortFaves . filterRTs
 
@@ -47,24 +47,26 @@ sortFaves = sortBy compareFavorites
     where compareFavorites = on compare ((read :: String -> Int) . (view _3))
 
 -- | Parse a single tweet's: name, text, fave count, retweet count
-getData :: Parser (String, String, String, String)
+getData :: Parser [(String, String, String, String)]
 getData = do
     text <- filterStr "text"
     skipMentions
-    --userMentions <- filterStr "user_mentions"
-    --name <- if userMentions == "[]" then filterStr "name" else filterStr "name" >> filterStr "name" -- FIXME fix this to read number of userMentions
     name <- filterStr "name"
     isQuote <- filterStr "is_quote_status"
     case isQuote of
         "false" -> do
             rts <- filterStr "retweet_count"
             faves <- filterStr "favorite_count"
-            pure (name, text, faves, rts)
+            pure $ pure (name, text, faves, rts)
         "true" -> do
+            textQuoted <- filterStr "text"
             skipMentions
-            rts <- filterStr "retweet_count" >> filterStr "retweet_count"
+            nameQuoted <- filterStr "name"
+            rtsQuoted <- filterStr "retweet_count"
+            favesQuoted <- filterStr "favorite_count"
+            rts <- filterStr "retweet_count"
             faves <- filterStr "favorite_count"
-            pure (name, text, faves, rts)
+            pure [(name, text, faves, rts), (nameQuoted, textQuoted, favesQuoted, rtsQuoted)]
 
 -- TODO make it work when user names include ]
 skipInsideBrackets :: Parser ()

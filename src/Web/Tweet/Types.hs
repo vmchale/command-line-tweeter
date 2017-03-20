@@ -21,7 +21,20 @@ data Tweet = Tweet
     , _replyID  :: Maybe Int
     } deriving (Generic, Default)
 
+-- | Data type for tweets as they are returned
+data TweetEntity = TweetEntity
+    { _text :: String
+    , _name :: String
+    , _screenName :: Maybe String
+    , _tweetId :: Int
+    , _isQuoteStatus :: Bool
+    , _retweets :: Int
+    , _favorites :: Int
+    } deriving (Generic, Default)
+
 -- | Stores data like (name, text, favoriteCount, retweetCount)
 type Timeline = [(String, String, String, String)]
 
 makeLenses ''Tweet
+
+makeLenses ''TweetEntity

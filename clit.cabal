@@ -1,5 +1,5 @@
 name:                clit
-version:             0.4.0.4
+version:             0.4.0.5
 synopsis:            Post tweets from stdin
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -25,6 +25,7 @@ library
                      , Web.Tweet.Exec
   other-modules:       Web.Tweet.Types
                      , Web.Tweet.Utils
+                     , Web.Tweet.Utils.Colors
                      , Web.Tweet.Sign
   build-depends:       base >= 4.7 && < 5
                      , http-client-tls

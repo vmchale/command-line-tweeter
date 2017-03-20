@@ -19,3 +19,7 @@
 - [x] get/process your timeline
   - [x] parse returns module?
   - [ ] return id/ADT instead of strings
+    - [ ] show-id option for tweets so you can reply?
+    - [ ] also show-screen-name option?
+- [x] show quote tweets?
+- [ ] use T.Text instead of String

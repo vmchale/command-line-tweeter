@@ -78,9 +78,11 @@ to view your own timeline.
 The directory `bash/` has a `mkCompletions` script to allow command completions for your convenice.
 
 ## Library
+
 A haskell package is included. It's fairly easy to use once you have the credentials set up, with two main functions: `thread` and `basicTweet`: the first for threading your own tweets or replying to someone else's and the second for just tweeting.
 
 ### Finer details
+
 The function `tweetData` will tweet an object of type `Tweet`. Its use is pretty self-explanatory, but how to best form `Tweet`s is not immediately obvious.
 
 `Tweet` is an instance of `Default` so you can use `def` to get an empty tweet replying to nobody and not fetching extended user data. This is especially useful if you want to use lenses and avoid ugly record syntax, e.g.
@@ -90,3 +92,7 @@ set status "This is the new status field" $ def
 ```
 
 will give you a `Tweet` with sensible defaults and the desired text.
+
+### Haskell
+
+This 
