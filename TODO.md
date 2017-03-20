@@ -16,5 +16,6 @@
 - [x] make cli interface nice/usable by humans
 - [ ] let it install bash completions by itself? 
   - [x] parser with actual commands! 
-- [ ] get/process your timeline
+- [x] get/process your timeline
   - [x] parse returns module?
+  - [ ] return id/ADT instead of strings

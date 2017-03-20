@@ -5,7 +5,6 @@
 -- | Exports the `Tweet` type, a datatype for building tweets easily
 module Web.Tweet.Types where
 
-import Data.Aeson
 import GHC.Generics
 import Control.Lens
 import Data.Default
@@ -26,5 +25,3 @@ data Tweet = Tweet
 type Timeline = [(String, String, String, String)]
 
 makeLenses ''Tweet
-
-instance ToJSON Tweet where

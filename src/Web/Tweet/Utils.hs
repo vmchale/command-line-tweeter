@@ -6,12 +6,15 @@ import Text.Megaparsec.String
 import Text.Megaparsec.Lexer as L
 import Text.Megaparsec
 import Data.Char
+import Data.List
 import Data.Monoid
 import Data.Maybe
 import Web.Tweet.Types
 import Control.Monad
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>), char, (<>), string)
 import Control.Lens.Tuple
+import Control.Lens hiding (noneOf)
+import Data.Function
 
 -- `FIXME` 
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
@@ -34,12 +37,23 @@ getTweets = parse parseTweet ""
 parseTweet :: Parser Timeline
 parseTweet = many (try getData <|> (const ("","","","") <$> eof))
 
+hits = sortFaves . filterRTs
+
+filterRTs :: Timeline -> Timeline
+filterRTs = filter ((/="RT") . take 2 . (view _2))
+
+sortFaves :: Timeline -> Timeline
+sortFaves = sortBy compareFavorites
+    where compareFavorites = on compare ((read :: String -> Int) . (view _3))
+
 -- | Parse a single tweet's: name, text, fave count, retweet count
 getData :: Parser (String, String, String, String)
 getData = do
     text <- filterStr "text"
-    userMentions <- filterStr "user_mentions"
-    name <- if userMentions == "[]" then filterStr "name" else filterStr "name" >> filterStr "name"
+    skipMentions
+    --userMentions <- filterStr "user_mentions"
+    --name <- if userMentions == "[]" then filterStr "name" else filterStr "name" >> filterStr "name" -- FIXME fix this to read number of userMentions
+    name <- filterStr "name"
     isQuote <- filterStr "is_quote_status"
     case isQuote of
         "false" -> do
@@ -47,9 +61,22 @@ getData = do
             faves <- filterStr "favorite_count"
             pure (name, text, faves, rts)
         "true" -> do
+            skipMentions
             rts <- filterStr "retweet_count" >> filterStr "retweet_count"
             faves <- filterStr "favorite_count"
             pure (name, text, faves, rts)
+
+-- TODO make it work when user names include ]
+skipInsideBrackets :: Parser ()
+skipInsideBrackets =void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf "[]")))
+
+skipMentions :: Parser ()
+skipMentions = do
+    many $ try $ anyChar >> notFollowedBy (string ("\"user_mentions\":"))
+    char ','
+    string "\"user_mentions\":"
+    skipInsideBrackets --between (char '[') (char ']') (many $ anyChar)
+    pure ()
 
 -- | Throw out input until we get to a relevant tag.
 filterStr :: String -> Parser String
@@ -73,6 +100,7 @@ newlineChar = do
     string "\\n"
     pure '\n'
 
+-- TODO
 --emoji :: Parser Char
 --emoji = do
 --    string "\\u"
@@ -85,6 +113,7 @@ unicodeChar = do
     num <- fromHex . filterEmoji <$> count 4 anyChar
     pure . toEnum . fromIntegral $ num
 
+-- | ignore emoji 
 filterEmoji str = if head str == 'd' then "FFFD" else str
 
 -- | Parse escaped characters
