@@ -22,12 +22,12 @@ parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " {-- ♡💛--} <> fave <> " ♺ " <> rts <> "\n" <> (displayTimeline rest) -- 
+displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " {-- ♡💛--} <> fave <> " ♺ " <> rts <> "\n\n" <> (displayTimeline rest) -- 
 displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((user,content,fave,rts):rest) = ((show . yellow . text $ user) <> ":\n    " <> content) <> "\n    " <> (show . red . text $ "♥ ") {-- ♡💛--} <> fave <> (show . green . text $ " ♺ ") <> rts <> "\n" <> (displayTimelineColor rest) -- 
+displayTimelineColor ((user,content,fave,rts):rest) = ((show . yellow . text $ user) <> ":\n    " <> content) <> "\n    " <> (show . red . text $ "♥ ") {-- ♡💛--} <> fave <> (show . green . text $ " ♺ ") <> rts <> "\n\n" <> (displayTimelineColor rest) -- 
 displayTimelineColor [] = []
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
