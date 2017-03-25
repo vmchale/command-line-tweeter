@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             0.5.0.1
+version:             0.5.1.0
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
