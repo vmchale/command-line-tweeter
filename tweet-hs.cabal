@@ -1,6 +1,6 @@
 name:                tweet-hs
-version:             0.5.0.0
-synopsis:            Post tweets from stdin
+version:             0.5.0.1
+synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
 license:             BSD3
@@ -27,6 +27,7 @@ library
                      , Web.Tweet.Utils
                      , Web.Tweet.Utils.Colors
                      , Web.Tweet.Sign
+                     , Web.Tweet.Parser
   build-depends:       base >= 4.7 && < 5
                      , http-client-tls
                      , http-client

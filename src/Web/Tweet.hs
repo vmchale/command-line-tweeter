@@ -197,6 +197,7 @@ responseInt request manager = do
     return $ (read . (takeWhile (/=',')) . (drop 52)) (BSL.unpack $ responseBody response)
 
 -- | Convert a tweet to a percent-encoded url for querying an API
+-- TODO make this more general, taking in a Map object
 urlString :: Tweet -> String
 urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
