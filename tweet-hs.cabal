@@ -28,6 +28,8 @@ library
                      , Web.Tweet.Utils.Colors
                      , Web.Tweet.Sign
                      , Web.Tweet.Parser
+                     , Web.Tweet.API
+                     , Web.Tweet.Utils.API
   build-depends:       base >= 4.7 && < 5
                      , http-client-tls
                      , http-client

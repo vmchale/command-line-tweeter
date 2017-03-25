@@ -14,12 +14,14 @@ import Data.List.Extra
 import Web.Tweet.Parser
 import Text.Megaparsec
 
+hits :: Timeline -> Timeline
 hits = sortTweets . filterRTs
 
 filterRTs :: Timeline -> Timeline
 filterRTs = filter ((/="RT @") . take 4 . (view text))
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
+getTweets :: String -> Either (ParseError Char Dec) Timeline
 getTweets = parse parseTweet "" 
 
 -- | Display Timeline without color
@@ -64,4 +66,3 @@ getConfigData filepath = zip <$> keys <*> content
 -- `FIXME` 
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
     where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])
-

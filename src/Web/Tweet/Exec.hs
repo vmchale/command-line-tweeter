@@ -9,7 +9,7 @@ import qualified Data.ByteString.Char8 as BS
 import Control.Monad
 import Data.Foldable (fold)
 import Data.List
-import Data.Monoid
+import Data.Monoid hiding (getAll)
 import System.Directory
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
@@ -93,11 +93,11 @@ select (Program (Sort True name) Nothing) = putStrLn =<< showBest name True  =<<
 select (Program (Sort False name) (Just file)) = putStrLn =<< showBest name False file
 select (Program (Sort False name) Nothing) = putStrLn =<< showBest name False  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Raw name) Nothing) = do
-    raw <- getRaw name Nothing =<< (++ "/.cred") <$> getHomeDirectory
+    raw <- getAll name Nothing =<< (++ "/.cred") <$> getHomeDirectory
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
 select (Program (Raw name) (Just file)) = do
-    raw <- getRaw name Nothing file
+    raw <- getAll name Nothing file
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
 

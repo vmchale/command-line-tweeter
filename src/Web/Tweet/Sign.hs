@@ -15,7 +15,7 @@ signRequest filepath req = do
     c <- credential filepath
     signOAuth o c req
 
--- | Create an OAuth from config data in a file
+-- | Create an OAuth api key from config data in a file
 oAuth :: FilePath -> IO OAuth
 oAuth filepath = do
     secret <- (lineByKey "api-sec") <$> getConfigData filepath
