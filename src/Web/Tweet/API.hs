@@ -87,31 +87,39 @@ getTimelineRaw count = getRequest ("https://api.twitter.com/1.1/statuses/home_ti
     where requestString = "?count=" ++ (show count)
 
 -- | Delete a tweet given its id
-deleteTweet :: Int -> FilePath -> IO ()
+deleteTweet :: Integer -> FilePath -> IO ()
 deleteTweet = (fmap void) . deleteTweetRaw
 
 -- | Favorite a tweet given its id
-favoriteTweet :: Int -> FilePath -> IO ()
+favoriteTweet :: Integer -> FilePath -> IO ()
 favoriteTweet = (fmap void) . favoriteTweetRaw
 
 -- | Unfavorite a tweet given its id
-unfavoriteTweet :: Int -> FilePath -> IO ()
+unfavoriteTweet :: Integer -> FilePath -> IO ()
 unfavoriteTweet = (fmap void) . unfavoriteTweetRaw
 
 -- | Unretweet a tweet given its id
-unretweetTweet :: Int -> FilePath -> IO ()
+unretweetTweet :: Integer -> FilePath -> IO ()
 unretweetTweet = (fmap void) . unretweetTweetRaw
 
+-- | Unfollow a user given their screen name
+unfollow :: String -> FilePath -> IO ()
+unfollow = (fmap void) . unfollowUserRaw
+
+-- | Follow a user given their screen name
+follow :: String -> FilePath -> IO ()
+follow = (fmap void) . followUserRaw
+
 -- | Retweet a tweet given its id
-retweetTweet :: Int -> FilePath -> IO ()
+retweetTweet :: Integer -> FilePath -> IO ()
 retweetTweet = (fmap void) . retweetTweetRaw
 
 -- | Favorite a tweet given its id; return bytestring response
-favoriteTweetRaw :: Int -> FilePath -> IO BSL.ByteString
+favoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
 favoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/destroy/" ++ (show id) ++ ".json")
 
 -- | Retweet a tweet given its id; return bytestring response
-retweetTweetRaw :: Int -> FilePath -> IO BSL.ByteString
+retweetTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
 retweetTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/retweet/" ++ (show id) ++ ".json")
 
 -- | Send a DM given text, screen name of recipient.
@@ -119,21 +127,21 @@ sendDMRaw txt screenName = postRequest ("https://api.twitter.com/1.1/direct_mess
     where encoded = strEncode $ txt
 
 -- | Follow a user given their screen name
-followUser :: String -> FilePath -> IO BSL.ByteString
-followUser screenName = postRequest("https://api.twitter.com/1.1/friendships/create.json?screen_name=" ++ screenName)
+followUserRaw :: String -> FilePath -> IO BSL.ByteString
+followUserRaw screenName = postRequest("https://api.twitter.com/1.1/friendships/create.json?screen_name=" ++ screenName)
 
 -- | Follow a user given their screen name
-unfollowUser :: String -> FilePath -> IO BSL.ByteString
-unfollowUser screenName = postRequest("https://api.twitter.com/1.1/friendships/destroy.json?screen_name=" ++ screenName)
+unfollowUserRaw :: String -> FilePath -> IO BSL.ByteString
+unfollowUserRaw screenName = postRequest("https://api.twitter.com/1.1/friendships/destroy.json?screen_name=" ++ screenName)
 
 -- | Unretweet a tweet given its id; return bytestring response
-unretweetTweetRaw :: Int -> FilePath -> IO BSL.ByteString
+unretweetTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
 unretweetTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/unretweet/" ++ (show id) ++ ".json")
 
 -- | Favorite a tweet given its id; return bytestring response
-unfavoriteTweetRaw :: Int -> FilePath -> IO BSL.ByteString
+unfavoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
 unfavoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/destroy/" ++ (show id) ++ ".json")
 
 -- | Delete a tweet given its id; return bytestring response
-deleteTweetRaw :: Int -> FilePath -> IO BSL.ByteString
+deleteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
 deleteTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/destroy/" ++ (show id) ++ ".json")

@@ -16,6 +16,7 @@ import System.Directory
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 
 -- | Data type for a command
+-- TODO add boolean option to show ids alongside tweets
 data Command = Timeline { count :: Maybe Int , color :: Bool }
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
     | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
@@ -23,6 +24,12 @@ data Command = Timeline { count :: Maybe Int , color :: Bool }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
     | Sort { color :: Bool , screenName :: String }
     | Delete { twId :: Integer }
+    | Fav { twId :: Integer }
+    | Unfav { twId :: Integer }
+    | Retweet { twId :: Integer }
+    | Unretweet { twId :: Integer }
+    | Follow { screenName :: String }
+    | Unfollow { screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -49,58 +56,46 @@ exec = execParser opts >>= select
 
 -- | Executes program given parsed `Program`
 select :: Program -> IO ()
-select (Program (Send (Just n) Nothing Nothing input) Nothing) = fromCLI input n =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send Nothing Nothing Nothing input) Nothing) = fromCLI input 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send (Just n) Nothing Nothing input) (Just file))  = fromCLI input n file
-select (Program (Send Nothing Nothing Nothing input) (Just file)) = fromCLI input 15 file
-select (Program (Send (Just n) (Just id) (Just handles) input) Nothing) = thread input handles (read id) n  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send (Just n) (Just id) (Just handles) input) (Just file)) = thread input handles (pure . read $ id) n file
-select (Program (Send Nothing (Just id) (Just handles) input) (Just file)) = thread input handles (pure . read $ id) 15 file
-select (Program (Send (Just n) (Just id) Nothing input) Nothing) = (thread input [] (pure . read $ id) n)  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send Nothing (Just id) Nothing input) Nothing) = thread input [] (pure . read $ id) 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send Nothing (Just id) (Just handles) input) Nothing) = thread input handles (pure . read $ id) 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Send (Just n) (Just id) Nothing input) (Just file)) = thread input [] (pure . read $ id) n file
-select (Program (Send (Just n) Nothing (Just handles) input) (Just file)) = thread input handles Nothing n file
-select (Program (SendInput (Just n) Nothing Nothing) Nothing) = fromStdIn n =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput Nothing Nothing Nothing) Nothing) = fromStdIn 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput (Just n) Nothing Nothing) (Just file))  = fromStdIn n file
-select (Program (SendInput Nothing Nothing Nothing) (Just file) ) = fromStdIn 15 file
-select (Program (SendInput (Just n) (Just id) (Just handles)) Nothing) = threadStdIn handles (read id) n  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput (Just n) (Just id) (Just handles)) (Just file)) = threadStdIn handles (pure . read $ id) n file
-select (Program (SendInput Nothing (Just id) (Just handles)) (Just file))  = threadStdIn handles (pure . read $ id) 15 file
-select (Program (SendInput (Just n) (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) n  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput Nothing (Just id) Nothing) Nothing) = threadStdIn [] (pure . read $ id) 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput Nothing (Just id) (Just handles)) Nothing) = threadStdIn handles (pure . read $ id) 15  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (SendInput (Just n) (Just id) Nothing) (Just file)) = threadStdIn [] (pure . read $ id) n file
-select (Program (SendInput (Just n) Nothing (Just handles)) (Just file)) = threadStdIn handles Nothing n file
-select (Program (Timeline Nothing False) Nothing) = putStrLn =<< showTimeline 8 False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Timeline Nothing False) (Just file)) = putStrLn =<< showTimeline 8 False file
-select (Program (Timeline (Just n) False) (Just file)) = putStrLn =<< showTimeline 8 False file
-select (Program (Timeline (Just n) False) Nothing) = putStrLn =<< showTimeline 8 False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Timeline Nothing True) Nothing) = putStrLn =<< showTimeline 8 True  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Timeline Nothing True) (Just file)) = putStrLn =<< showTimeline 8 True file
-select (Program (Timeline (Just n) True) (Just file)) = putStrLn =<< showTimeline 8 True file
-select (Program (Timeline (Just n) True) Nothing) = putStrLn =<< showTimeline 8 True  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Profile (Just n) True name) (Just file)) = putStrLn =<< showProfile name n True file
-select (Program (Profile Nothing True name) (Just file)) = putStrLn =<< showProfile name 12 True file
-select (Program (Profile (Just n) True name) Nothing) = putStrLn =<< showProfile name n True  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Profile Nothing True name) Nothing) = putStrLn =<< showProfile name 12 True  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Profile (Just n) False name) (Just file)) = putStrLn =<< showProfile name n False file
-select (Program (Profile Nothing False name) (Just file)) = putStrLn =<< showProfile name 12 False file
-select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Sort True name) (Just file)) = putStrLn =<< showBest name True file
-select (Program (Sort True name) Nothing) = putStrLn =<< showBest name True  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Sort False name) (Just file)) = putStrLn =<< showBest name False file
-select (Program (Sort False name) Nothing) = putStrLn =<< showBest name False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Markov name) Nothing) = do
-    raw <- getMarkov name Nothing =<< (++ "/.cred") <$> getHomeDirectory
-    writeFile (name ++ ".txt") (unlines raw)
-    putStrLn $ "Written output to: " ++ name ++ ".txt"
-select (Program (Markov name) (Just file)) = do
+select (Program com maybeFile) = case maybeFile of
+    (Just file) -> selectCommand com file
+    _ -> selectCommand com =<< (++ "/.cred") <$> getHomeDirectory
+
+selectCommand :: Command -> FilePath -> IO ()
+selectCommand (Send maybeNum Nothing Nothing input) file = fromCLI input (maybe 15 id maybeNum) file
+selectCommand (Send maybeNum (Just replyId) Nothing input) file = thread input [] (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (Send maybeNum Nothing (Just handles) input) file = thread input handles Nothing (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum Nothing Nothing) file  = fromStdIn (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) (Just handles)) file = threadStdIn handles (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) Nothing) file = threadStdIn [] (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum Nothing (Just handles)) file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
+selectCommand (Timeline maybeNum color) file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
+selectCommand (Profile maybeNum color name) file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
+selectCommand (Sort color name) file = putStrLn =<< showBest name color file
+selectCommand (Markov name) file = do
     raw <- getMarkov name Nothing file
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
+selectCommand (Delete n) file = do
+    deleteTweet n file
+    putStrLn "...tweet deleted successfully!"
+selectCommand (Fav n) file = do
+    favoriteTweet n file
+    putStrLn "...tweet favorited successfully!"
+selectCommand (Unfav n) file = do
+    unfavoriteTweet n file
+    putStrLn "...tweet unfavorited successfully!"
+selectCommand (Retweet n) file = do
+    retweetTweet n file
+    putStrLn "...tweet retweeted successfully!"
+selectCommand (Unretweet n) file = do
+    unretweetTweet n file
+    putStrLn "...tweet retweeted successfully!"
+selectCommand (Follow screenName) file = do
+    follow screenName file
+    putStrLn ("..." ++ screenName ++ " followed successfully!")
+selectCommand (Unfollow screenName) file = do
+    unfollow screenName file
+    putStrLn ("..." ++ screenName ++ " unfollowed successfully!")
 
 -- | Parser to return a program datatype
 program :: Parser Program
@@ -112,7 +107,13 @@ program = Program
         <> command "user" (info profile (progDesc "Get a user's profile"))
         <> command "markov" (info markov (progDesc "Grab tweets en masse."))
         <> command "hits" (info best (progDesc "View a user's top tweets."))
-        <> command "del" (info delete (progDesc "View a user's top tweets."))))
+        <> command "del" (info delete (progDesc "Delete a tweet.")) -- TODO delete/favorite in bunches!
+        <> command "fav" (info fav (progDesc "Favorite a tweet"))
+        <> command "ufav" (info unfav (progDesc "Unfavorite a tweet"))
+        <> command "urt" (info unrt (progDesc "Un-retweet a tweet"))
+        <> command "rt" (info rt (progDesc "Retweet a tweet"))
+        <> command "follow" (info fol (progDesc "Follow a user"))
+        <> command "unfollow" (info unfol (progDesc "Unfollow a user"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -134,17 +135,47 @@ timeline = Timeline
 
 -- | Parser for the raw subcommand
 markov :: Parser Command
-markov = Markov
-  <$> argument str
-    (metavar "SCREEN_NAME"
-    <> help "Screen name of user whose tweets you want in bulk.")
+markov = Markov <$> user
 
 -- | Parser for the raw subcommand
+fol :: Parser Command
+fol = Follow <$> user
+
+-- | Parser for the raw subcommand
+unfol :: Parser Command
+unfol = Unfollow <$> user
+
+-- | Parse a user screen name
+user :: Parser String
+user = argument str
+    (metavar "SCREEN_NAME"
+    <> help "Screen name of user.")
+
+-- | Parser for the del subcommand
 delete :: Parser Command
-delete = Delete
-  <$> read <$> (argument str
+delete = Delete <$> getInt
+
+-- | Parser for the fav subcommand
+fav :: Parser Command
+fav = Fav <$> getInt
+
+-- | Parser for the fav subcommand
+unfav :: Parser Command
+unfav = Unfav <$> getInt
+
+-- | Parser for the fav subcommand
+unrt :: Parser Command
+unrt = Unretweet <$> getInt
+
+-- | Parser for the fav subcommand
+rt :: Parser Command
+rt = Retweet <$> getInt
+
+-- | Parser for the del subcommand
+getInt :: Parser Integer
+getInt = read <$> (argument str
     (metavar "TWEET_ID"
-    <> help "ID of tweet to delete"))
+    <> help "ID of tweet"))
 
 -- | Parser for the user subcommand
 profile :: Parser Command
@@ -162,6 +193,7 @@ profile = Profile
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
 
+-- | Parse best tweets
 best :: Parser Command
 best = Sort
     <$> switch

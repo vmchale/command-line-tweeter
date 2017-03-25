@@ -67,7 +67,7 @@ thread' content hs idNum num filepath = do
     let f = \str i -> tweetData (Tweet { _status = str, _handles = hs, _replyID = if i == 0 then Nothing else Just i }) filepath
     let initial = f (head content)
     last <- foldr ((>=>) . f) initial (content) $ fromMaybe 0 idNum
-    deleteTweet last filepath
+    deleteTweet (fromIntegral last) filepath
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
 --
