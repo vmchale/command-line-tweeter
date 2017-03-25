@@ -15,6 +15,7 @@ import Control.Lens.Tuple
 import Control.Lens hiding (noneOf)
 import Data.Function
 import Web.Tweet.Utils.Colors
+import Data.List.Extra
 
 -- `FIXME` 
 parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
@@ -22,15 +23,18 @@ parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n\n" <> (displayTimeline rest) 
-displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n    " <> (_name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimeline rest) 
+displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = (user <> ":\n    " <> (fixNewline content)) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n\n" <> (displayTimeline rest) 
+displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = (user <> ":\n    " <> (fixNewline content)) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n    " <> (_name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimeline rest) 
 displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n\n" <> (displayTimelineColor rest) 
-displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n    " <> (toYellow $ _name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimelineColor rest) 
+displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = ((toYellow user) <> ":\n    " <> (fixNewline content)) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n\n" <> (displayTimelineColor rest) 
+displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = ((toYellow user) <> ":\n    " <> (fixNewline content)) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n    " <> (toYellow $ _name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimelineColor rest) 
 displayTimelineColor [] = []
+
+fixNewline :: String -> String
+fixNewline = replace "\n" "\n    "
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
 getTweets = parse parseTweet "" 
@@ -100,14 +104,14 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if (isJust open) then "\\\"" else "\\\","
-    want <- (fmap concat) . many $ (pure <$> noneOf forbidden) <|> (pure <$> specialChar '\"') <|> (pure <$> specialChar '/') <|> newlineChar <|> (pure <$> unicodeChar) -- specialChar 'u'
+    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- specialChar 'u'
     pure want
 
 -- | Parse a newline
-newlineChar :: Parser String
+newlineChar :: Parser Char
 newlineChar = do
     string "\\n"
-    pure "\n    "
+    pure '\n'
 
 -- TODO
 --emoji :: Parser Char

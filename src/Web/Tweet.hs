@@ -56,6 +56,7 @@ import Control.Lens.Tuple
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
 import Data.List.Utils
+import Text.Megaparsec.Error
 
 -- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
 -- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
@@ -107,37 +108,52 @@ tweetData tweet filepath = do
     responseInt request manager
 
 -- | Get tweets (text only) for some user
-getRaw screenName filepath = do
-    let requestString = "?screen_name=" ++ screenName ++ "&count=3200"
-    manager <- newManager tlsManagerSettings
-    initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
-    request <- signRequest filepath $ initialRequest { method = "GET"}
-    let fromRight (Right a) = a
-    map (view text) . fromRight .  getTweets . BSL.unpack <$> responseBS request manager
+-- TODO make it recursive/have it read max_id from returned tweet.
+getRaw :: String -> Maybe Int -> FilePath -> IO [String]
+getRaw screenName maxId filepath = do
+    tweets <- either (error "Parse tweets failed") id <$> getProfileMax screenName 200 filepath maxId
+    let lastId = _tweetId . last $ tweets
+    if (Just lastId) == maxId then 
+        pure []
+    else
+        do
+            putStrLn $ "fetching tweets since " ++ show lastId ++ "..."
+            next <- getRaw screenName (Just lastId) filepath
+            pure ((map _text tweets) ++ next)
 
--- | Get user profile given screen name and how many tweets to return
-getProfile screenName count filepath = do
-    let requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
+getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Dec) Timeline)
+getProfileMax screenName count filepath maxId = do
+    let requestString = case maxId of {
+        (Just id) -> "?screen_name=" ++ screenName ++ "&count=" ++ (show count) ++ "&max_id=" ++ (show id) ;
+        Nothing -> "?screen_name=" ++ screenName ++ "&count=" ++ (show count) }
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET"}
     responseBS request manager -- TODO
     getTweets . BSL.unpack <$> responseBS request manager
 
+-- | Get user profile given screen name and how many tweets to return
+getProfile :: String -> Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+getProfile screenName count filepath = getProfileMax screenName count filepath Nothing
+
 -- | Show your DMs, given how many to return and whether or not to use color.
 showDMs count color filepath = showTweets color <$> getDMs count filepath
 
 -- | Show a user profile given screen name, how many tweets to return (API
 -- maximum is 3200), and whether to print them in color.
-showProfile :: Show t => String -> t -> Bool -> FilePath -> IO String
+showProfile :: String -> Int -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
+-- | Show the most successful tweets by a given user, given their screen name. 
+showBest :: String -> Bool -> FilePath -> IO String
 showBest screenName color filepath = showTweets color . (fmap (take 13 . hits)) <$> getProfile screenName 3200 filepath
 
 -- | Display user timeline
+showTimeline :: Int -> Bool -> FilePath -> IO String
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
 
 -- | Display user timeline in color
+showTweets :: Bool -> Either (ParseError Char Dec) Timeline -> String
 showTweets color = (either show id) . (fmap (if color then displayTimelineColor else displayTimeline))
 
 -- | Get user's DMs.
@@ -149,6 +165,7 @@ getDMs count filepath = do
     getTweets . BSL.unpack <$> responseBS request manager
 
 -- | Get a timeline
+getTimeline :: Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
 getTimeline count filepath = do
     let requestString = "?count=" ++ (show count)
     manager <- newManager tlsManagerSettings
@@ -169,8 +186,6 @@ responseBS request manager = do
     response <- httpLbs request manager
     let code = statusCode $ responseStatus response
     putStr $ if (code == 200) then "" else "failed :(\n error code: " ++ (show code) ++ "\n"
-    -- print $ generalCategory ('📚')
-    -- print $ (toEnum (0x1F48C) :: Char) -- (0xF079)
     pure . responseBody $ response
 
 -- | print output of a request and return status id as an `Int`. 

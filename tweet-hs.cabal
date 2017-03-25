@@ -42,6 +42,7 @@ library
                      , ansi-wl-pprint
                      , MissingH
                      , directory
+                     , extra
   default-language:    Haskell2010
 
 executable tweet

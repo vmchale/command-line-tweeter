@@ -93,11 +93,13 @@ select (Program (Sort True name) Nothing) = putStrLn =<< showBest name True  =<<
 select (Program (Sort False name) (Just file)) = putStrLn =<< showBest name False file
 select (Program (Sort False name) Nothing) = putStrLn =<< showBest name False  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Raw name) Nothing) = do
-    raw <- getRaw name =<< (++ "/.cred") <$> getHomeDirectory
-    sequence_ $ putStrLn <$> raw
+    raw <- getRaw name Nothing =<< (++ "/.cred") <$> getHomeDirectory
+    writeFile (name ++ ".txt") (unlines raw)
+    putStrLn $ "Written output to: " ++ name ++ ".txt"
 select (Program (Raw name) (Just file)) = do
-    raw <- getRaw name file
-    sequence_ $ putStrLn <$> raw --fix this idk
+    raw <- getRaw name Nothing file
+    writeFile (name ++ ".txt") (unlines raw)
+    putStrLn $ "Written output to: " ++ name ++ ".txt"
 
 -- | Parser to return a program datatype
 program :: Parser Program
