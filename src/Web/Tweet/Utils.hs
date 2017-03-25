@@ -100,14 +100,14 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if (isJust open) then "\\\"" else "\\\","
-    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- specialChar 'u'
+    want <- (fmap concat) . many $ (pure <$> noneOf forbidden) <|> (pure <$> specialChar '\"') <|> (pure <$> specialChar '/') <|> newlineChar <|> (pure <$> unicodeChar) -- specialChar 'u'
     pure want
 
 -- | Parse a newline
-newlineChar :: Parser Char
+newlineChar :: Parser String
 newlineChar = do
     string "\\n"
-    pure '\n'
+    pure "\n    "
 
 -- TODO
 --emoji :: Parser Char
