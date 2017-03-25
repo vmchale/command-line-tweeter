@@ -24,7 +24,7 @@ To build from source, install [haskell stack](https://docs.haskellstack.org/en/s
 wget -qO- https://get.haskellstack.org/ | sh
 ```
 
-Then type `stack install` in the directory and it will generate an executable called `tweet`, which is what we want.
+Then type `stack install tweet-hs` it will generate an executable called `tweet`, which is what we want.
 
 ## Use
 

@@ -32,6 +32,7 @@ module Web.Tweet
     , showTimeline
     , getProfile
     , showProfile
+    , showBest
     , getDMs
     , showDMs
     , getRaw
@@ -55,7 +56,6 @@ import Control.Lens.Tuple
 import Web.Authenticate.OAuth
 import Web.Tweet.Sign
 import Data.List.Utils
-import qualified Data.Text as T
 
 -- | thread tweets together nicely. Takes a string, a list of handles to reply to, plus the ID of the status you're replying to.
 -- If you need to thread tweets without replying, pass a `Nothing` as the third argument.
@@ -113,7 +113,7 @@ getRaw screenName filepath = do
     initialRequest <- parseRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString)
     request <- signRequest filepath $ initialRequest { method = "GET"}
     let fromRight (Right a) = a
-    map (view _2) . fromRight .  getTweets . BSL.unpack <$> responseBS request manager
+    map (view text) . fromRight .  getTweets . BSL.unpack <$> responseBS request manager
 
 -- | Get user profile given screen name and how many tweets to return
 getProfile screenName count filepath = do
@@ -131,6 +131,8 @@ showDMs count color filepath = showTweets color <$> getDMs count filepath
 -- maximum is 3200), and whether to print them in color.
 showProfile :: Show t => String -> t -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
+
+showBest screenName color filepath = showTweets color . (fmap (take 11 . hits)) <$> getProfile screenName 3200 filepath
 
 -- | Display user timeline
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath

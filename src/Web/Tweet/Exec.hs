@@ -15,12 +15,13 @@ import System.Directory
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 
--- | Data type for a 
-data Command = Timeline { count :: Maybe Int , color :: Bool } 
-    | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] } 
-    | Profile { count :: Maybe Int , color :: Bool , screenName :: String } 
-    | Raw { screenName :: String } 
+-- | Data type for a command
+data Command = Timeline { count :: Maybe Int , color :: Bool }
+    | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
+    | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
+    | Raw { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
+    | Sort { color :: Bool , screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -42,8 +43,8 @@ exec = execParser opts >>= select
     where
         opts = info (helper <*> program)
             (fullDesc
-            <> progDesc "SendInput from stdin!"
-            <> header "clit - a Command Line Interface SendInputer")
+            <> progDesc "Tweet and view tweets"
+            <> header "clit - a Command Line Interface Tweeter")
 
 -- | Executes program given parsed `Program`
 select :: Program -> IO ()
@@ -87,6 +88,10 @@ select (Program (Profile (Just n) False name) (Just file)) = putStrLn =<< showPr
 select (Program (Profile Nothing False name) (Just file)) = putStrLn =<< showProfile name 12 False file
 select (Program (Profile (Just n) False name) Nothing) = putStrLn =<< showProfile name n False  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Profile Nothing False name) Nothing) = putStrLn =<< showProfile name 12 False  =<< (++ "/.cred") <$> getHomeDirectory
+select (Program (Sort True name) (Just file)) = putStrLn =<< showBest name True file
+select (Program (Sort True name) Nothing) = putStrLn =<< showBest name True  =<< (++ "/.cred") <$> getHomeDirectory
+select (Program (Sort False name) (Just file)) = putStrLn =<< showBest name False file
+select (Program (Sort False name) Nothing) = putStrLn =<< showBest name False  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Raw name) Nothing) = do
     raw <- getRaw name =<< (++ "/.cred") <$> getHomeDirectory
     sequence_ $ putStrLn <$> raw
@@ -102,7 +107,8 @@ program = Program
         <> command "input" (info tweetInput (progDesc "Send a tweet from stdIn"))
         <> command "view" (info timeline (progDesc "Get your timeline"))
         <> command "user" (info profile (progDesc "Get a user's profile"))
-        <> command "raw" (info raw (progDesc "Grab tweetInputs en masse."))))
+        <> command "raw" (info raw (progDesc "Grab tweets en masse."))
+        <> command "hits" (info best (progDesc "View a user's top tweets."))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -141,6 +147,16 @@ profile = Profile
         (long "color"
         <> short 'l'
         <> help "Whether to display profile with colorized terminal output")
+    <*> argument str
+        (metavar "SCREEN_NAME"
+        <> help "Screen name of user you want to view.")
+
+best :: Parser Command
+best = Sort
+    <$> switch
+        (long "color"
+        <> short 'l'
+        <> help "Display timeline with colorized terminal output.")
     <*> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")

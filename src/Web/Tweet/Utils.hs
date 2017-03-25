@@ -22,55 +22,62 @@ parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((user,content,fave,rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " {-- ♡💛--} <> fave <> " ♺ " <> rts <> "\n\n" <> (displayTimeline rest) -- 
+displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n\n" <> (displayTimeline rest) 
+displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = (user <> ":\n    " <> content) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n    " <> (_name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimeline rest) 
 displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((user,content,fave,rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") {-- ♡💛--} <> fave <> (toGreen " ♺ ") <> rts <> "\n\n" <> (displayTimelineColor rest) -- 
+displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n\n" <> (displayTimelineColor rest) 
+displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = ((toYellow user) <> ":\n    " <> content) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n    " <> (toYellow $ _name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimelineColor rest) 
 displayTimelineColor [] = []
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
 getTweets = parse parseTweet "" 
 
+-- TODO add feature to filter out quotes etc. Or make it a sub-thing?
+sortTweets :: Timeline -> Timeline
+sortTweets = sortBy compareTweet
+    where compareTweet (TweetEntity _ _ _ _ _ f1 r1) (TweetEntity _ _ _ _ _ f2 r2) = compare (2*r2 + f2) (2*r1 + f1)
+
 -- | Parse some number of tweets
 parseTweet :: Parser Timeline
-parseTweet = concat <$> many (try getData <|> (const (pure ("","","","")) <$> eof))
+parseTweet = many (try getData <|> (const (TweetEntity "" "" "" 0 Nothing 0 0) <$> eof))
 
-hits = sortFaves . filterRTs
+hits = sortTweets . filterRTs
 
 filterRTs :: Timeline -> Timeline
-filterRTs = filter ((/="RT") . take 2 . (view _2))
-
-sortFaves :: Timeline -> Timeline
-sortFaves = sortBy compareFavorites
-    where compareFavorites = on compare ((read :: String -> Int) . (view _3))
+filterRTs = filter ((/="RT @") . take 4 . (view text))
 
 -- | Parse a single tweet's: name, text, fave count, retweet count
-getData :: Parser [(String, String, String, String)]
+getData :: Parser TweetEntity
 getData = do
+    id <- read <$> filterStr "id" -- FIXME check it doesn't drop anything
     text <- filterStr "text"
     skipMentions
     name <- filterStr "name"
+    screenName <- filterStr "screen_name"
     isQuote <- filterStr "is_quote_status"
     case isQuote of
         "false" -> do
-            rts <- filterStr "retweet_count"
-            faves <- filterStr "favorite_count"
-            pure $ pure (name, text, faves, rts)
+            rts <- read <$> filterStr "retweet_count"
+            faves <- read <$> filterStr "favorite_count"
+            pure (TweetEntity text name screenName id Nothing rts faves)
         "true" -> do
+            idQuoted <- read <$> filterStr "id"
             textQuoted <- filterStr "text"
             skipMentions
             nameQuoted <- filterStr "name"
-            rtsQuoted <- filterStr "retweet_count"
-            favesQuoted <- filterStr "favorite_count"
-            rts <- filterStr "retweet_count"
-            faves <- filterStr "favorite_count"
-            pure [(name, text, faves, rts), (nameQuoted, textQuoted, favesQuoted, rtsQuoted)]
+            screenNameQuoted <- filterStr "screen_name"
+            rtsQuoted <- read <$> filterStr "retweet_count"
+            favesQuoted <- read <$> filterStr "favorite_count"
+            rts <- read <$> filterStr "retweet_count"
+            faves <- read <$> filterStr "favorite_count"
+            pure $ TweetEntity text name screenName id (Just (TweetEntity textQuoted nameQuoted screenNameQuoted idQuoted Nothing rtsQuoted favesQuoted)) rts faves
 
 -- TODO make it work when user names include ]
 skipInsideBrackets :: Parser ()
-skipInsideBrackets =void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf "[]")))
+skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf "[]")))
 
 skipMentions :: Parser ()
 skipMentions = do
