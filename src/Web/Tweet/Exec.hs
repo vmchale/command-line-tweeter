@@ -8,7 +8,7 @@ import Options.Applicative
 import qualified Data.ByteString.Char8 as BS
 import Control.Monad
 import Data.Foldable (fold)
-import Data.List
+import Data.List hiding (delete)
 import Data.Monoid hiding (getAll)
 import System.Directory
 
@@ -19,9 +19,10 @@ data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
 data Command = Timeline { count :: Maybe Int , color :: Bool }
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
     | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
-    | Raw { screenName :: String }
+    | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
     | Sort { color :: Bool , screenName :: String }
+    | Delete { twId :: Integer }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -92,12 +93,12 @@ select (Program (Sort True name) (Just file)) = putStrLn =<< showBest name True 
 select (Program (Sort True name) Nothing) = putStrLn =<< showBest name True  =<< (++ "/.cred") <$> getHomeDirectory
 select (Program (Sort False name) (Just file)) = putStrLn =<< showBest name False file
 select (Program (Sort False name) Nothing) = putStrLn =<< showBest name False  =<< (++ "/.cred") <$> getHomeDirectory
-select (Program (Raw name) Nothing) = do
-    raw <- getAll name Nothing =<< (++ "/.cred") <$> getHomeDirectory
+select (Program (Markov name) Nothing) = do
+    raw <- getMarkov name Nothing =<< (++ "/.cred") <$> getHomeDirectory
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
-select (Program (Raw name) (Just file)) = do
-    raw <- getAll name Nothing file
+select (Program (Markov name) (Just file)) = do
+    raw <- getMarkov name Nothing file
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
 
@@ -109,8 +110,9 @@ program = Program
         <> command "input" (info tweetInput (progDesc "Send a tweet from stdIn"))
         <> command "view" (info timeline (progDesc "Get your timeline"))
         <> command "user" (info profile (progDesc "Get a user's profile"))
-        <> command "raw" (info raw (progDesc "Grab tweets en masse."))
-        <> command "hits" (info best (progDesc "View a user's top tweets."))))
+        <> command "markov" (info markov (progDesc "Grab tweets en masse."))
+        <> command "hits" (info best (progDesc "View a user's top tweets."))
+        <> command "del" (info delete (progDesc "View a user's top tweets."))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -131,11 +133,18 @@ timeline = Timeline
         <> help "Display timeline with colorized terminal output.")
 
 -- | Parser for the raw subcommand
-raw :: Parser Command
-raw = Raw
+markov :: Parser Command
+markov = Markov
   <$> argument str
     (metavar "SCREEN_NAME"
-    <> help "Screen name of user whose tweetInputs you want in bulk.")
+    <> help "Screen name of user whose tweets you want in bulk.")
+
+-- | Parser for the raw subcommand
+delete :: Parser Command
+delete = Delete
+  <$> read <$> (argument str
+    (metavar "TWEET_ID"
+    <> help "ID of tweet to delete"))
 
 -- | Parser for the user subcommand
 profile :: Parser Command

@@ -8,6 +8,7 @@ module Web.Tweet.Types where
 import GHC.Generics
 import Control.Lens
 import Data.Default
+import Web.Authenticate.OAuth
 
 -- | Data type for our request: consists of the status text, whether to trium user information in the response, the handles to mention, and optionally the id of the status to reply to.
 data Tweet = Tweet
@@ -29,6 +30,9 @@ data TweetEntity = TweetEntity
 
 -- | Stores data like (name, text, favoriteCount, retweetCount)
 type Timeline = [TweetEntity]
+
+-- | Contains an 'OAuth' and a 'Credential'; encapsulates everything needed to sign a request.
+type Config = (OAuth, Credential)
 
 makeLenses ''Tweet
 

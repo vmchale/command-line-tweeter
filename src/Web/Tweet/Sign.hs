@@ -6,6 +6,7 @@ module Web.Tweet.Sign where
 import Web.Tweet.Utils
 import Web.Authenticate.OAuth
 import Network.HTTP.Client
+import Web.Tweet.Types
 
 -- | Sign a request using your OAuth dev token.
 -- Uses the IO monad because signatures require a timestamp
@@ -14,6 +15,12 @@ signRequest filepath req = do
     o <- oAuth filepath
     c <- credential filepath
     signOAuth o c req
+
+-- TODO function to read a ~/.tweetrc file to a 'Config'
+
+-- | Sign a request using a 'Config' object, avoiding the need to read token/key from file
+signRequestMem :: Config -> Request -> IO Request
+signRequestMem = uncurry signOAuth
 
 -- | Create an OAuth api key from config data in a file
 oAuth :: FilePath -> IO OAuth

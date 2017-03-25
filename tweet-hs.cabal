@@ -46,6 +46,7 @@ library
                      , MissingH
                      , directory
                      , extra
+                     , composition
   default-language:    Haskell2010
 
 executable tweet

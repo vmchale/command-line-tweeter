@@ -14,9 +14,11 @@ import Data.List.Extra
 import Web.Tweet.Parser
 import Text.Megaparsec
 
+-- | filter out retweets, and sort by most successful.
 hits :: Timeline -> Timeline
 hits = sortTweets . filterRTs
 
+-- | Filter out retweets
 filterRTs :: Timeline -> Timeline
 filterRTs = filter ((/="RT @") . take 4 . (view text))
 
@@ -36,10 +38,11 @@ displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = ((
 displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = ((toYellow user) <> ":\n    " <> (fixNewline content)) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n    " <> (toYellow $ _name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimelineColor rest) 
 displayTimelineColor [] = []
 
+-- | When displaying, newlines should include indentation.
 fixNewline :: String -> String
 fixNewline = replace "\n" "\n    "
 
--- TODO add feature to filter out quotes etc. Or make it a sub-thing?
+-- | sort tweets by most successful
 sortTweets :: Timeline -> Timeline
 sortTweets = sortBy compareTweet
     where compareTweet (TweetEntity _ _ _ _ _ f1 r1) (TweetEntity _ _ _ _ _ f2 r2) = compare (2*r2 + f2) (2*r1 + f1)
@@ -62,7 +65,3 @@ getConfigData filepath = zip <$> keys <*> content
     where content = (map (BS.pack . filterLine)) . lines <$> file
           keys    = (map (BS.pack . keyLinePie)) . lines <$> file
           file    = readFile filepath
-
--- `FIXME` 
-parseDMs = zip <$> (extractEvery 2 <$> filterStr "screen_name") <*> (filterStr "text")
-    where extractEvery n = map snd . filter ((== n) . fst) . zip (cycle [1..n])

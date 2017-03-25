@@ -75,7 +75,7 @@ to view your own timeline.
 
 ### Completions
 
-The directory `bash/` has a `mkCompletions` script to allow command completions for your convenice.
+The directory `bash/` has a `mkCompletions` script to allow command completions for your convenience.
 
 ## Library
 
@@ -92,7 +92,3 @@ set status "This is the new status field" $ def
 ```
 
 will give you a `Tweet` with sensible defaults and the desired text.
-
-### Haskell
-
-This 

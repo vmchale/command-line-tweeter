@@ -1,4 +1,5 @@
 -- FIXME make this module available under cabal file
+-- | Module containing parsers for tweet and response data.
 module Web.Tweet.Parser where
 
 import Text.Megaparsec.String
@@ -39,15 +40,17 @@ getData = do
             faves <- read <$> filterStr "favorite_count"
             pure $ TweetEntity text name screenName id (Just (TweetEntity textQuoted nameQuoted screenNameQuoted idQuoted Nothing rtsQuoted favesQuoted)) rts faves
 
+-- | Skip a set of square brackets []
 skipInsideBrackets :: Parser ()
 skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf "[]")))
 
+-- | Skip user mentions field to avoid parsing the wrong name
 skipMentions :: Parser ()
 skipMentions = do
     many $ try $ anyChar >> notFollowedBy (string ("\"user_mentions\":"))
     char ','
     string "\"user_mentions\":"
-    skipInsideBrackets --between (char '[') (char ']') (many $ anyChar)
+    skipInsideBrackets
     pure ()
 
 -- | Throw out input until we get to a relevant tag.
