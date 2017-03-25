@@ -132,7 +132,7 @@ showDMs count color filepath = showTweets color <$> getDMs count filepath
 showProfile :: Show t => String -> t -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
-showBest screenName color filepath = showTweets color . (fmap (take 11 . hits)) <$> getProfile screenName 3200 filepath
+showBest screenName color filepath = showTweets color . (fmap (take 13 . hits)) <$> getProfile screenName 3200 filepath
 
 -- | Display user timeline
 showTimeline count color filepath = showTweets color <$> getTimeline count filepath
