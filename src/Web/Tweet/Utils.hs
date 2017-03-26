@@ -15,11 +15,15 @@ import Text.Megaparsec
 
 -- | filter out retweets, and sort by most successful.
 hits :: Timeline -> Timeline
-hits = sortTweets . filterRTs
+hits = sortTweets . filterRTs 
 
 -- | Filter out retweets
 filterRTs :: Timeline -> Timeline
 filterRTs = filter ((/="RT @") . take 4 . (view text))
+
+-- | Filter out quotes
+filterQuotes :: Timeline -> Timeline
+filterQuotes = filter ((==Nothing) . (view quoted))
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
 getTweets :: String -> Either (ParseError Char Dec) Timeline
@@ -27,58 +31,58 @@ getTweets = parse parseTweet ""
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = concat [user
+displayTimeline ((TweetEntity content user _ _ Nothing rts fave):rest) = concat [user
     ,":\n    " 
-    ,(fixNewline content) 
+    ,fixNewline content 
     ,"\n    " 
     ,"♥ " 
-    ,(show fave) 
+    ,show fave 
     ," ♺ " 
-    ,(show rts) 
+    ,show rts 
     ,"\n\n" 
-    ,(displayTimeline rest)]
-displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = concat [user 
+    ,displayTimeline rest]
+displayTimeline ((TweetEntity content user _ _ (Just quoted) rts fave):rest) = concat [user 
     , ":\n    " 
-    , (fixNewline content) 
+    , fixNewline content 
     , "\n    " 
     , "♥ " 
-    , (show fave) 
+    , show fave 
     , " ♺ " 
-    , (show rts) 
+    , show rts 
     , "\n    " 
-    , (_name quoted) 
+    , _name quoted 
     , ": " 
-    , (_text quoted) 
+    , _text quoted 
     , "\n\n" 
-    , (displayTimeline rest)]
+    , displayTimeline rest]
 displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = concat [(toYellow user) 
+displayTimelineColor ((TweetEntity content user _ _ Nothing rts fave):rest) = concat [toYellow user 
     , ":\n    " 
-    , (fixNewline content)
+    , fixNewline content
     , "\n    " 
-    , (toRed "♥ ") 
-    , (show fave) 
-    , (toGreen " ♺ ") 
-    , (show rts) 
+    , toRed "♥ " 
+    , show fave 
+    , toGreen " ♺ " 
+    , show rts 
     , "\n\n" 
-    , (displayTimelineColor rest)]
-displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = concat [(toYellow user) 
+    , displayTimelineColor rest]
+displayTimelineColor ((TweetEntity content user _ _ (Just quoted) rts fave):rest) = concat [toYellow user 
     , ":\n    " 
-    , (fixNewline content) 
+    , fixNewline content 
     , "\n    " 
-    , (toRed "♥ ") 
-    , (show fave) 
-    , (toGreen " ♺ ") 
-    , (show rts) 
+    , toRed "♥ " 
+    , show fave 
+    , toGreen " ♺ " 
+    , show rts 
     , "\n    " 
-    , (toYellow $ _name quoted) 
+    , toYellow $ _name quoted 
     , ": " 
-    , (_text quoted) 
+    , _text quoted 
     , "\n\n" 
-    , (displayTimelineColor rest)]
+    , displayTimelineColor rest]
 displayTimelineColor [] = []
 
 -- | When displaying, newlines should include indentation.
@@ -88,7 +92,7 @@ fixNewline = replace "\n" "\n    "
 -- | sort tweets by most successful
 sortTweets :: Timeline -> Timeline
 sortTweets = sortBy compareTweet
-    where compareTweet (TweetEntity _ _ _ _ _ f1 r1) (TweetEntity _ _ _ _ _ f2 r2) = compare (2*r2 + f2) (2*r1 + f1)
+    where compareTweet (TweetEntity _ _ _ _ _ r1 f1) (TweetEntity _ _ _ _ _ r2 f2) = compare (2*r2 + f2) (2*r1 + f1)
 
 -- | helper function to get the key as read from a file
 keyLinePie :: String -> String

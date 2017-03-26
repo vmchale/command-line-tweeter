@@ -63,7 +63,6 @@ showProfile screenName count color filepath = showTweets color <$> getProfile sc
 -- | Show the most successful tweets by a given user, given their screen name. 
 showBest :: String -> Bool -> FilePath -> IO String
 showBest screenName color filepath = showTweets color . pure . (take 13 . hits) <$> getAll screenName Nothing filepath 
--- (fmap (take 13 . hits)) <$> getProfile screenName 3200 filepath
 
 -- | Display user timeline
 showTimeline :: Int -> Bool -> FilePath -> IO String

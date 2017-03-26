@@ -6,6 +6,7 @@ module Web.Tweet.Exec ( exec
 import Web.Tweet
 import Options.Applicative
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as BSL
 import Control.Monad
 import Data.Foldable (fold)
 import Data.List hiding (delete)
@@ -30,6 +31,7 @@ data Command = Timeline { count :: Maybe Int , color :: Bool }
     | Unretweet { twId :: Integer }
     | Follow { screenName :: String }
     | Unfollow { screenName :: String }
+    | Dump { screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -97,6 +99,7 @@ selectCommand (Follow screenName) file = do
 selectCommand (Unfollow screenName) file = do
     unfollow screenName file
     putStrLn ("..." ++ screenName ++ " unfollowed successfully!")
+selectCommand (Dump screenName) file = BSL.putStrLn =<< (getProfileRaw screenName 3200 file Nothing)
 
 -- | Parser to return a program datatype
 program :: Parser Program
@@ -114,7 +117,8 @@ program = Program
         <> command "urt" (info unrt (progDesc "Un-retweet a tweet"))
         <> command "rt" (info rt (progDesc "Retweet a tweet"))
         <> command "follow" (info fol (progDesc "Follow a user"))
-        <> command "unfollow" (info unfol (progDesc "Unfollow a user"))))
+        <> command "unfollow" (info unfol (progDesc "Unfollow a user"))
+        <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -141,6 +145,10 @@ markov = Markov <$> user
 -- | Parser for the raw subcommand
 fol :: Parser Command
 fol = Follow <$> user
+
+-- | Parser for the raw subcommand
+dump :: Parser Command
+dump = Dump <$> user
 
 -- | Parser for the raw subcommand
 unfol :: Parser Command

@@ -9,6 +9,8 @@ import Web.Tweet.Types
 import Data.Monoid
 import Data.Maybe
 import Control.Monad
+--
+import System.IO.Unsafe
 
 -- | Parse some number of tweets
 parseTweet :: Parser Timeline
@@ -29,16 +31,20 @@ getData = do
             faves <- read <$> filterStr "favorite_count"
             pure (TweetEntity text name screenName id Nothing rts faves)
         "true" -> do
-            idQuoted <- read <$> filterStr "id"
-            textQuoted <- filterStr "text"
-            skipMentions
-            nameQuoted <- filterStr "name"
-            screenNameQuoted <- filterStr "screen_name"
-            rtsQuoted <- read <$> filterStr "retweet_count"
-            favesQuoted <- read <$> filterStr "favorite_count"
+            quoted <- parseQuoted
             rts <- read <$> filterStr "retweet_count"
             faves <- read <$> filterStr "favorite_count"
-            pure $ TweetEntity text name screenName id (Just (TweetEntity textQuoted nameQuoted screenNameQuoted idQuoted Nothing rtsQuoted favesQuoted)) rts faves
+            pure $ TweetEntity text name screenName id quoted rts faves
+
+
+parseQuoted :: Parser (Maybe TweetEntity)
+parseQuoted = do
+    optional (string ",\"quoted_status_id" >> filterStr "quoted_status_id_str") -- FIXME it's skipping too many? No prob is when two in a row twitter just dives in to RTs ALSO something wonky with it flipping rts/faves?
+    contents <- optional $ string "\",\"quoted_status"
+    case contents of
+        (Just contents) -> pure <$> getData
+        _ -> pure Nothing
+    
 
 -- | Skip a set of square brackets []
 skipInsideBrackets :: Parser ()
