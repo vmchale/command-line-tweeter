@@ -28,14 +28,58 @@ getTweets = parse parseTweet ""
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = (user <> ":\n    " <> (fixNewline content)) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n\n" <> (displayTimeline rest) 
-displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = (user <> ":\n    " <> (fixNewline content)) <> "\n    " <> "♥ " <> (show fave) <> " ♺ " <> (show rts) <> "\n    " <> (_name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimeline rest) 
+displayTimeline ((TweetEntity content user _ _ Nothing fave rts):rest) = concat [user
+    ,":\n    " 
+    ,(fixNewline content) 
+    ,"\n    " 
+    ,"♥ " 
+    ,(show fave) 
+    ," ♺ " 
+    ,(show rts) 
+    ,"\n\n" 
+    ,(displayTimeline rest)]
+displayTimeline ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = concat [user 
+    , ":\n    " 
+    , (fixNewline content) 
+    , "\n    " 
+    , "♥ " 
+    , (show fave) 
+    , " ♺ " 
+    , (show rts) 
+    , "\n    " 
+    , (_name quoted) 
+    , ": " 
+    , (_text quoted) 
+    , "\n\n" 
+    , (displayTimeline rest)]
 displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = ((toYellow user) <> ":\n    " <> (fixNewline content)) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n\n" <> (displayTimelineColor rest) 
-displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = ((toYellow user) <> ":\n    " <> (fixNewline content)) <> "\n    " <> (toRed "♥ ") <> (show fave) <> (toGreen " ♺ ") <> (show rts) <> "\n    " <> (toYellow $ _name quoted) <> ": " <> (_text quoted) <> "\n\n" <> (displayTimelineColor rest) 
+displayTimelineColor ((TweetEntity content user _ _ Nothing fave rts):rest) = concat [(toYellow user) 
+    , ":\n    " 
+    , (fixNewline content)
+    , "\n    " 
+    , (toRed "♥ ") 
+    , (show fave) 
+    , (toGreen " ♺ ") 
+    , (show rts) 
+    , "\n\n" 
+    , (displayTimelineColor rest)]
+displayTimelineColor ((TweetEntity content user _ _ (Just quoted) fave rts):rest) = concat [(toYellow user) 
+    , ":\n    " 
+    , (fixNewline content) 
+    , "\n    " 
+    , (toRed "♥ ") 
+    , (show fave) 
+    , (toGreen " ♺ ") 
+    , (show rts) 
+    , "\n    " 
+    , (toYellow $ _name quoted) 
+    , ": " 
+    , (_text quoted) 
+    , "\n\n" 
+    , (displayTimelineColor rest)]
 displayTimelineColor [] = []
 
 -- | When displaying, newlines should include indentation.

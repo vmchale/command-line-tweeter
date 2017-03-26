@@ -60,6 +60,7 @@ select (Program com maybeFile) = case maybeFile of
     (Just file) -> selectCommand com file
     _ -> selectCommand com =<< (++ "/.cred") <$> getHomeDirectory
 
+-- | Executes subcommand given subcommand + filepath to configuration file
 selectCommand :: Command -> FilePath -> IO ()
 selectCommand (Send maybeNum Nothing Nothing input) file = fromCLI input (maybe 15 id maybeNum) file
 selectCommand (Send maybeNum (Just replyId) Nothing input) file = thread input [] (pure . read $ replyId) (maybe 15 id maybeNum) file
