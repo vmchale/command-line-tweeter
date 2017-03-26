@@ -4,7 +4,8 @@
 module Web.Tweet.Parser (parseTweet
                         ) where
 
-import Text.Megaparsec.String
+import qualified Data.ByteString as BS
+import Text.Megaparsec.ByteString
 import Text.Megaparsec.Lexer as L
 import Text.Megaparsec
 import Web.Tweet.Types
@@ -85,11 +86,11 @@ newlineChar = do
 unicodeChar :: Parser Char
 unicodeChar = do
     string "\\u"
-    num <- fromHex . filterEmoji <$> count 4 anyChar
+    num <- fromHex . filterEmoji . BS.pack . map (fromIntegral . fromEnum) <$> count 4 anyChar
     pure . toEnum . fromIntegral $ num
 
 -- | helper function to ignore emoji
-filterEmoji str = if head str == 'd' then "FFFD" else str
+filterEmoji str = if BS.head str == (fromIntegral . fromEnum $ 'd') then "FFFD" else str
 
 -- | Parse escaped characters
 specialChar :: Char -> Parser Char
@@ -98,6 +99,6 @@ specialChar c = do
     pure c
 
 -- | Convert a string of four hexadecimal digits to an integer.
-fromHex :: String -> Integer
+fromHex :: BS.ByteString -> Integer
 fromHex = fromRight . (parse (L.hexadecimal :: Parser Integer) "")
     where fromRight (Right a) = a

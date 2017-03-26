@@ -37,11 +37,11 @@ tweetData :: Tweet -> FilePath -> IO Int
 tweetData tweet filepath = do
     let requestString = urlString tweet
     bytes <- postRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString) filepath
-    pure . (view tweetId) . head . either (error "failed to parse tweet") id . getTweets . BSL.unpack $ bytes
+    pure . (view tweetId) . head . either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
 
 -- | Gets user profile with max_id set.
 getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Dec) Timeline)
-getProfileMax screenName count filepath maxId = getTweets . BSL.unpack <$> getProfileRaw screenName count filepath maxId
+getProfileMax screenName count filepath maxId = getTweets . BSL.toStrict <$> getProfileRaw screenName count filepath maxId
 
 -- | Gets user profile with max_id set.
 getProfileRaw :: String -> Int -> FilePath -> Maybe Int -> IO BSL.ByteString
@@ -77,7 +77,7 @@ getDMsRaw count = getRequest ("https://api.twitter.com/1.1/direct_messages.json"
 
 -- | Get a timeline
 getTimeline :: Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
-getTimeline = (fmap (getTweets . BSL.unpack)) .* getTimelineRaw
+getTimeline = (fmap (getTweets . BSL.toStrict)) .* getTimelineRaw
 
 -- | Get a user's timeline and return response as a bytestring
 getTimelineRaw :: Int -> FilePath -> IO BSL.ByteString

@@ -2,6 +2,7 @@
 module Web.Tweet.Utils where
 
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString as BS2
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.Text as T
 import Data.Text.Encoding
@@ -32,7 +33,7 @@ filterQuotes :: Timeline -> Timeline
 filterQuotes = filter ((==Nothing) . (view quoted))
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content. 
-getTweets :: String -> Either (ParseError Char Dec) Timeline
+getTweets :: BS2.ByteString -> Either (ParseError Char Dec) Timeline
 getTweets = parse parseTweet "" 
 
 -- | Display Timeline without color
