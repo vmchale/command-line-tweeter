@@ -4,7 +4,6 @@ module Web.Tweet.Utils where
 import qualified Data.ByteString.Char8 as BS
 import Data.Char
 import Data.List
-import Data.Monoid
 import Web.Tweet.Types
 import Control.Lens.Tuple
 import Control.Lens hiding (noneOf)
