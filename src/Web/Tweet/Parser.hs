@@ -39,7 +39,7 @@ getData = do
 
 parseQuoted :: Parser (Maybe TweetEntity)
 parseQuoted = do
-    optional (string ",\"quoted_status_id" >> filterStr "quoted_status_id_str") -- FIXME it's skipping too many? No prob is when two in a row twitter just dives in to RTs ALSO something wonky with it flipping rts/faves?
+    optional (string ",\"quoted_status_id" >> filterStr "quoted_status_id_str") -- FIXME it's skipping too many? prob is when two are deleted in a row twitter just dives in to RTs
     contents <- optional $ string "\",\"quoted_status"
     case contents of
         (Just contents) -> pure <$> getData

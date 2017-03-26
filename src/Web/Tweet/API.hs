@@ -62,7 +62,7 @@ showProfile screenName count color filepath = showTweets color <$> getProfile sc
 
 -- | Show the most successful tweets by a given user, given their screen name. 
 showBest :: String -> Bool -> FilePath -> IO String
-showBest screenName color filepath = showTweets color . pure . (take 13 . hits) <$> getAll screenName Nothing filepath 
+showBest screenName color filepath = showTweets color . pure . (take 12 . hits) <$> getAll screenName Nothing filepath 
 
 -- | Display user timeline
 showTimeline :: Int -> Bool -> FilePath -> IO String
@@ -125,13 +125,25 @@ retweetTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/retweet/
 sendDMRaw txt screenName = postRequest ("https://api.twitter.com/1.1/direct_messages/new.json?text=" ++ encoded ++ "&screen_name" ++ screenName ++ ".json")
     where encoded = strEncode $ txt
 
+-- | Get DMs, return bytestring of response
+getDMs :: Int -> FilePath -> IO BSL.ByteString
+getDMs count = getRequest ("https://dev.twitter.com/rest/reference/get/direct_messages.json?count=" ++ (show count))
+
 -- | Follow a user given their screen name
 followUserRaw :: String -> FilePath -> IO BSL.ByteString
-followUserRaw screenName = postRequest("https://api.twitter.com/1.1/friendships/create.json?screen_name=" ++ screenName)
+followUserRaw screenName = postRequest ("https://api.twitter.com/1.1/friendships/create.json?screen_name=" ++ screenName)
+
+-- | Block a user given their screen name
+blockUserRaw :: String -> FilePath -> IO BSL.ByteString
+blockUserRaw screenName = postRequest ("https://api.twitter.com/1.1/blocks/create.json?screen_name=" ++ screenName)
+
+-- | Unblock a user given their screen name
+unblockUserRaw :: String -> FilePath -> IO BSL.ByteString
+unblockUserRaw screenName = postRequest ("https://api.twitter.com/1.1/blocks/destroy.json?screen_name=" ++ screenName)
 
 -- | Follow a user given their screen name
 unfollowUserRaw :: String -> FilePath -> IO BSL.ByteString
-unfollowUserRaw screenName = postRequest("https://api.twitter.com/1.1/friendships/destroy.json?screen_name=" ++ screenName)
+unfollowUserRaw screenName = postRequest ("https://api.twitter.com/1.1/friendships/destroy.json?screen_name=" ++ screenName)
 
 -- | Unretweet a tweet given its id; return bytestring response
 unretweetTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
