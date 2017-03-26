@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             0.5.1.2
+version:             0.5.2.0
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -11,7 +11,7 @@ copyright:           2016 Vanessa McHale
 category:            Web
 build-type:          Simple
 stability:           stable
-extra-source-files:  README.md, stack.yaml, bash/mkCompletions
+extra-source-files:  README.md, stack.yaml, bash/mkCompletions, test/data
 cabal-version:       >=1.10
 
 Flag llvm-fast {

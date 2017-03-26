@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- FIXME make this module available under cabal file
 -- | Module containing parsers for tweet and response data.
-module Web.Tweet.Parser (parseTweet
-                        ) where
+module Web.Tweet.Parser ( parseTweet
+                        , getData ) where
 
 import qualified Data.ByteString as BS
 import Text.Megaparsec.ByteString
