@@ -116,7 +116,7 @@ retweetTweet = (fmap void) . retweetTweetRaw
 
 -- | Favorite a tweet given its id; return bytestring response
 favoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
-favoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/destroy/" ++ (show id) ++ ".json")
+favoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/create.json?id=" ++ (show id))
 
 -- | Retweet a tweet given its id; return bytestring response
 retweetTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
@@ -140,7 +140,7 @@ unretweetTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/unretw
 
 -- | Favorite a tweet given its id; return bytestring response
 unfavoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
-unfavoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/destroy/" ++ (show id) ++ ".json")
+unfavoriteTweetRaw id = postRequest ("https://api.twitter.com/1.1/favorites/destroy.json?id=" ++ (show id))
 
 -- | Delete a tweet given its id; return bytestring response
 deleteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
