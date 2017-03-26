@@ -26,7 +26,7 @@ data TweetEntity = TweetEntity
     , _quoted :: Maybe TweetEntity
     , _retweets :: Int
     , _favorites :: Int
-    } deriving (Generic, Default, Eq)
+    } deriving (Generic, Default, Eq, Show)
 
 -- | Stores data like (name, text, favoriteCount, retweetCount)
 type Timeline = [TweetEntity]

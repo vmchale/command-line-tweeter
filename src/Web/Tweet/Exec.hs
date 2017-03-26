@@ -23,7 +23,7 @@ data Command = Timeline { count :: Maybe Int , color :: Bool }
     | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
     | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
-    | Sort { color :: Bool , screenName :: String }
+    | Sort { color :: Bool , screenName :: String , count :: Maybe Int }
     | Delete { twId :: Integer }
     | Fav { twId :: Integer }
     | Unfav { twId :: Integer }
@@ -73,7 +73,7 @@ selectCommand (SendInput maybeNum (Just replyId) Nothing) file = threadStdIn [] 
 selectCommand (SendInput maybeNum Nothing (Just handles)) file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
 selectCommand (Timeline maybeNum color) file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
 selectCommand (Profile maybeNum color name) file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
-selectCommand (Sort color name) file = putStrLn =<< showBest name color file
+selectCommand (Sort color name maybeNum) file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
 selectCommand (Markov name) file = do
     raw <- getMarkov name Nothing file
     writeFile (name ++ ".txt") (unlines raw)
@@ -212,6 +212,11 @@ best = Sort
     <*> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
+    <*> (optional $ read <$> strOption
+        (long "count"
+        <> short 'n'
+        <> metavar "NUM"
+        <> help "Number of tweetInputs to fetch, default 12"))
 
 -- | Parser for the send subcommand
 tweet :: Parser Command

@@ -1,6 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- FIXME make this module available under cabal file
 -- | Module containing parsers for tweet and response data.
-module Web.Tweet.Parser where
+module Web.Tweet.Parser (parseTweet
+                        ) where
 
 import Text.Megaparsec.String
 import Text.Megaparsec.Lexer as L
@@ -9,8 +11,6 @@ import Web.Tweet.Types
 import Data.Monoid
 import Data.Maybe
 import Control.Monad
---
-import System.IO.Unsafe
 
 -- | Parse some number of tweets
 parseTweet :: Parser Timeline
@@ -36,7 +36,7 @@ getData = do
             faves <- read <$> filterStr "favorite_count"
             pure $ TweetEntity text name screenName id quoted rts faves
 
-
+-- | Parse a the quoted tweet
 parseQuoted :: Parser (Maybe TweetEntity)
 parseQuoted = do
     optional (string ",\"quoted_status_id" >> filterStr "quoted_status_id_str") -- FIXME it's skipping too many? prob is when two are deleted in a row twitter just dives in to RTs
@@ -48,7 +48,7 @@ parseQuoted = do
 
 -- | Skip a set of square brackets []
 skipInsideBrackets :: Parser ()
-skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf "[]")))
+skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf ("[]" :: String))))
 
 -- | Skip user mentions field to avoid parsing the wrong name
 skipMentions :: Parser ()
@@ -71,7 +71,7 @@ filterTag :: String -> Parser String
 filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
-    let forbidden = if (isJust open) then "\\\"" else "\\\","
+    let forbidden = if (isJust open) then ("\\\"" :: String) else ("\\\"," :: String)
     want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- specialChar 'u'
     pure want
 

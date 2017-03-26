@@ -6,7 +6,6 @@ module Web.Tweet.API where
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Text.Encoding
 import Web.Tweet.Types
 import Web.Tweet.Utils
 import Control.Monad
@@ -61,8 +60,8 @@ showProfile :: String -> Int -> Bool -> FilePath -> IO String
 showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
 
 -- | Show the most successful tweets by a given user, given their screen name. 
-showBest :: String -> Bool -> FilePath -> IO String
-showBest screenName color filepath = showTweets color . pure . (take 12 . hits) <$> getAll screenName Nothing filepath 
+showBest :: String -> Int -> Bool -> FilePath -> IO String
+showBest screenName n color filepath = showTweets color . pure . (take n . hits) <$> getAll screenName Nothing filepath 
 
 -- | Display user timeline
 showTimeline :: Int -> Bool -> FilePath -> IO String
