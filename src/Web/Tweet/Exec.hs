@@ -130,7 +130,8 @@ program = Program
         <> command "unfollow" (info unfol (progDesc "Unfollow a user"))
         <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))
         <> command "block" (info blockParser (progDesc "Block a user"))
-        <> command "unblock" (info unblockParser (progDesc "Unblock a user"))))
+        <> command "unblock" (info unblockParser (progDesc "Unblock a user"))
+        <> command "mention" (info mentionsParser (progDesc "Fetch mentions"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -220,7 +221,7 @@ profile = Profile
 
 -- | Parser for the mention subcommand
 mentionsParser :: Parser Command
-mentionsParser = Profile
+mentionsParser = Mentions
     <$> (optional $ read <$> strOption
         (long "count"
         <> short 'n'
