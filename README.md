@@ -8,7 +8,7 @@
 its [rust counterpart](https://github.com/vmchale/clit-rs) and it's a bit
 slower. 
 
-Reasons to use tweeth-s:
+Reasons to use tweet-hs:
   - Faster than other tools ([t](https://github.com/sferik/t),
   [oysttyer](https://github.com/oysttyer/oysttyer))
   - Support for colored output. 
