@@ -62,6 +62,9 @@ displayTimeline ((TweetEntity content user screenName idTweet (Just quoted) rts 
     , show idTweet
     , "\n    " 
     , _name quoted 
+    , " ("
+    , _screenName quoted
+    , ")"
     , ": " 
     , _text quoted 
     , "\n\n" 
@@ -100,6 +103,9 @@ displayTimelineColor ((TweetEntity content user screenName  idTweet (Just quoted
     , toBlue (show idTweet)
     , "\n    " 
     , toYellow $ _name quoted 
+    , " ("
+    , _screenName quoted
+    , ")"
     , ": " 
     , _text quoted 
     , "\n\n" 
