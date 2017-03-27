@@ -56,7 +56,7 @@ mentions = fmap (getTweets . BSL.toStrict) .* mentionsRaw
 
 -- | Gets mentions
 mentionsRaw :: Int -> FilePath -> IO BSL.ByteString
-mentionsRaw count filepath = getRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString) filepath
+mentionsRaw count filepath = getRequest ("https://api.twitter.com/1.1/statuses/mentions_timeline.json" ++ requestString) filepath
     where requestString = "?count=" ++ (show count)
 
 -- | Get user profile given screen name and how many tweets to return
