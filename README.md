@@ -3,6 +3,38 @@
 [![Build Status](https://travis-ci.org/vmchale/command-line-tweeter.svg?branch=master)](https://travis-ci.org/vmchale/command-line-tweeter)
 
 ![Displaying a user timeline in a terminal.](https://raw.githubusercontent.com/vmchale/command-line-tweeter/master/screenshot.png)
+
+`tweet-hs` is a command-line tool for twitter. It has a few more features than
+its [rust counterpart](https://github.com/vmchale/clit-rs) and it's a bit
+slower. 
+
+Reasons to use tweeth-s:
+  - Faster than other tools ([t](https://github.com/sferik/t),
+  [oysttyer](https://github.com/oysttyer/oysttyer))
+  - Support for colored output. 
+  - Can be used in scripts
+  - You know haskell and like being able to extend your tools. 
+  - You want something that can be called from
+    [vim](https://github.com/vmchale/vim-twitter)
+  - You want a twitter library for haskell. 
+  - BSD3 licensed 
+
+Reasons not to use tweet-hs:
+  - You want to extend your tools in [haskell](https://github.com/vmchale/command-line-tweeter)
+  - You want "twitter in a terminal" that [rainbowtools](https://github.com/DTVD/rainbowstream)
+    or [oysttyer](https://github.com/oysttyer/oysttyer) provides. 
+  - You want to be able to easily tweet emoji
+
+## Comparison to other command-line clients
+
+| Tool | Language | Color output | Interactive | Vim plugin support | Scriptable | Send emoji |
+| ---- | -------- | ------------ | ----------- | ------------------ | ---------- | ---------- |
+| tw | Rust | x |   | x | x |  |
+| rainbowstream | Python | x | x |  |  | x |
+| oysttyer | Perl |  | x |  | ½ |  |
+| tweet-hs | Haskell | x |  | x | x |  |
+| t | Ruby | ½ |  |  | x |  |
+
 ## Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
 
@@ -82,15 +114,3 @@ The directory `bash/` has a `mkCompletions` script to allow command completions 
 ## Library
 
 A haskell package is included. It's fairly easy to use once you have the credentials set up, with two main functions: `thread` and `basicTweet`: the first for threading your own tweets or replying to someone else's and the second for just tweeting.
-
-### Finer details
-
-The function `tweetData` will tweet an object of type `Tweet`. Its use is pretty self-explanatory, but how to best form `Tweet`s is not immediately obvious.
-
-`Tweet` is an instance of `Default` so you can use `def` to get an empty tweet replying to nobody and not fetching extended user data. This is especially useful if you want to use lenses and avoid ugly record syntax, e.g.
-
-```
-set status "This is the new status field" $ def
-```
-
-will give you a `Tweet` with sensible defaults and the desired text.
