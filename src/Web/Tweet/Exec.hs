@@ -21,6 +21,7 @@ data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color 
 data Command = Timeline { count :: Maybe Int }
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
     | Profile { count :: Maybe Int , screenName :: String }
+    | Mentions { count :: Maybe Int }
     | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
     | Sort { screenName :: String , count :: Maybe Int }
@@ -74,6 +75,7 @@ selectCommand (SendInput maybeNum (Just replyId) (Just handles)) _ file = thread
 selectCommand (SendInput maybeNum (Just replyId) Nothing) _ file = threadStdIn [] (pure . read $ replyId) (maybe 15 id maybeNum) file
 selectCommand (SendInput maybeNum Nothing (Just handles)) _ file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
 selectCommand (Timeline maybeNum) color file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
+selectCommand (Mentions maybeNum) color file = putStrLn =<< showTweets color <$> mentions (maybe 11 id maybeNum) file
 selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
 selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
 selectCommand (Markov name) _ file = do
@@ -215,6 +217,15 @@ profile = Profile
     <*> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
+
+-- | Parser for the mention subcommand
+mentionsParser :: Parser Command
+mentionsParser = Profile
+    <$> (optional $ read <$> strOption
+        (long "count"
+        <> short 'n'
+        <> metavar "NUM"
+        <> help "Number of tweetInputs to fetch, default 12"))
 
 -- | Parse best tweets
 best :: Parser Command

@@ -51,13 +51,13 @@ getProfileRaw screenName count filepath maxId = getRequest ("https://api.twitter
         Nothing -> "?screen_name=" ++ screenName ++ "&count=" ++ (show count) }
 
 -- | Get mentions and parse response as a list of tweets
-mentions :: String -> Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
-mentions = fmap (getTweets . BSL.toStrict) .** mentionsRaw
+mentions :: Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+mentions = fmap (getTweets . BSL.toStrict) .* mentionsRaw
 
 -- | Gets mentions
-mentionsRaw :: String -> Int -> FilePath -> IO BSL.ByteString
-mentionsRaw screenName count filepath = getRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString) filepath
-    where requestString = "?screen_name=" ++ screenName ++ "&count=" ++ (show count)
+mentionsRaw :: Int -> FilePath -> IO BSL.ByteString
+mentionsRaw count filepath = getRequest ("https://api.twitter.com/1.1/statuses/user_timeline.json" ++ requestString) filepath
+    where requestString = "?count=" ++ (show count)
 
 -- | Get user profile given screen name and how many tweets to return
 getProfile :: String -> Int -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
