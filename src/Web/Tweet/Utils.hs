@@ -3,9 +3,6 @@ module Web.Tweet.Utils where
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString as BS2
-import qualified Data.ByteString.Lazy as BSL
-import qualified Data.Text as T
-import Data.Text.Encoding
 import Data.Char
 import Data.List
 import Web.Tweet.Types
@@ -16,9 +13,6 @@ import Web.Tweet.Utils.Colors
 import Data.List.Extra
 import Web.Tweet.Parser
 import Text.Megaparsec
-
-bytestringToText :: BSL.ByteString -> T.Text
-bytestringToText = decodeUtf8 . BSL.toStrict
 
 -- | filter out retweets, and sort by most successful.
 hits :: Timeline -> Timeline

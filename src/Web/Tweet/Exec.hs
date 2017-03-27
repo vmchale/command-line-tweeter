@@ -14,16 +14,16 @@ import Data.Monoid hiding (getAll)
 import System.Directory
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
-data Program = Program { subcommand :: Command , cred :: Maybe FilePath }
+data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color :: Bool }
 
 -- | Data type for a command
 -- TODO add boolean option to show ids alongside tweets
-data Command = Timeline { count :: Maybe Int , color :: Bool }
+data Command = Timeline { count :: Maybe Int }
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
-    | Profile { count :: Maybe Int , color :: Bool , screenName :: String }
+    | Profile { count :: Maybe Int , screenName :: String }
     | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
-    | Sort { color :: Bool , screenName :: String , count :: Maybe Int }
+    | Sort { screenName :: String , count :: Maybe Int }
     | Delete { twId :: Integer }
     | Fav { twId :: Integer }
     | Unfav { twId :: Integer }
@@ -58,48 +58,48 @@ exec = execParser opts >>= select
 
 -- | Executes program given parsed `Program`
 select :: Program -> IO ()
-select (Program com maybeFile) = case maybeFile of
-    (Just file) -> selectCommand com file
-    _ -> selectCommand com =<< (++ "/.cred") <$> getHomeDirectory
+select (Program com maybeFile color) = case maybeFile of
+    (Just file) -> selectCommand com color file
+    _ -> selectCommand com color =<< (++ "/.cred") <$> getHomeDirectory
 
 -- | Executes subcommand given subcommand + filepath to configuration file
-selectCommand :: Command -> FilePath -> IO ()
-selectCommand (Send maybeNum Nothing Nothing input) file = fromCLI input (maybe 15 id maybeNum) file
-selectCommand (Send maybeNum (Just replyId) Nothing input) file = thread input [] (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (Send maybeNum Nothing (Just handles) input) file = thread input handles Nothing (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum Nothing Nothing) file  = fromStdIn (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum (Just replyId) (Just handles)) file = threadStdIn handles (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum (Just replyId) Nothing) file = threadStdIn [] (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum Nothing (Just handles)) file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
-selectCommand (Timeline maybeNum color) file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
-selectCommand (Profile maybeNum color name) file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
-selectCommand (Sort color name maybeNum) file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
-selectCommand (Markov name) file = do
+selectCommand :: Command -> Bool -> FilePath -> IO ()
+selectCommand (Send maybeNum Nothing Nothing input) _ file = fromCLI input (maybe 15 id maybeNum) file
+selectCommand (Send maybeNum (Just replyId) Nothing input) _ file = thread input [] (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (Send maybeNum Nothing (Just handles) input) _ file = thread input handles Nothing (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum Nothing Nothing) _ file  = fromStdIn (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) (Just handles)) _ file = threadStdIn handles (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) Nothing) _ file = threadStdIn [] (pure . read $ replyId) (maybe 15 id maybeNum) file
+selectCommand (SendInput maybeNum Nothing (Just handles)) _ file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
+selectCommand (Timeline maybeNum) color file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
+selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
+selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
+selectCommand (Markov name) _ file = do
     raw <- getMarkov name Nothing file
     writeFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
-selectCommand (Delete n) file = do
-    deleteTweet n file
-    putStrLn "...tweet deleted successfully!"
-selectCommand (Fav n) file = do
-    favoriteTweet n file
-    putStrLn "...tweet favorited successfully!"
-selectCommand (Unfav n) file = do
-    unfavoriteTweet n file
-    putStrLn "...tweet unfavorited successfully!"
-selectCommand (Retweet n) file = do
-    retweetTweet n file
-    putStrLn "...tweet retweeted successfully!"
-selectCommand (Unretweet n) file = do
-    unretweetTweet n file
-    putStrLn "...tweet retweeted successfully!"
-selectCommand (Follow screenName) file = do
+selectCommand (Delete n) color file = do
+    putStrLn "Deleted:\n"
+    putStrLn =<< showTweets color <$> deleteTweetResponse n file
+selectCommand (Fav n) color file = do
+    putStrLn "Favorited:\n"
+    putStrLn =<< showTweets color <$> favoriteTweetResponse n file
+selectCommand (Unfav n) color file = do
+    putStrLn "Unfavorited:\n"
+    putStrLn =<< showTweets color <$> unfavoriteTweetResponse n file
+selectCommand (Retweet n) color file = do
+    putStrLn "Retweeted:\n"
+    putStrLn =<< showTweets color <$> retweetTweetResponse n file
+selectCommand (Unretweet n) color file = do
+    putStrLn "Unretweeted:\n"
+    putStrLn =<< showTweets color <$> unretweetTweetResponse n file
+selectCommand (Follow screenName) color file = do
     follow screenName file
     putStrLn ("..." ++ screenName ++ " followed successfully!")
-selectCommand (Unfollow screenName) file = do
+selectCommand (Unfollow screenName) color file = do
     unfollow screenName file
     putStrLn ("..." ++ screenName ++ " unfollowed successfully!")
-selectCommand (Dump screenName) file = BSL.putStrLn =<< (getProfileRaw screenName 3200 file Nothing)
+selectCommand (Dump screenName) color file = BSL.putStrLn =<< (getProfileRaw screenName 3200 file Nothing)
 
 -- | Parser to return a program datatype
 program :: Parser Program
@@ -124,6 +124,10 @@ program = Program
         <> short 'c'
         <> metavar "CREDENTIALS"
         <> help "path to credentials"))
+    <*> switch
+        (long "color"
+        <> short 'l'
+        <> help "Display timeline with colorized terminal output.")
 
 -- | Parser for the view subcommand
 timeline :: Parser Command
@@ -133,10 +137,6 @@ timeline = Timeline
         <> short 'n'
         <> metavar "NUM"
         <> help "number of tweetInputs to fetch, default 5"))
-    <*> switch
-        (long "color"
-        <> short 'l'
-        <> help "Display timeline with colorized terminal output.")
 
 -- | Parser for the raw subcommand
 markov :: Parser Command
@@ -194,10 +194,6 @@ profile = Profile
         <> short 'n'
         <> metavar "NUM"
         <> help "Number of tweetInputs to fetch, default 12"))
-    <*> switch
-        (long "color"
-        <> short 'l'
-        <> help "Whether to display profile with colorized terminal output")
     <*> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
@@ -205,11 +201,7 @@ profile = Profile
 -- | Parse best tweets
 best :: Parser Command
 best = Sort
-    <$> switch
-        (long "color"
-        <> short 'l'
-        <> help "Display timeline with colorized terminal output.")
-    <*> argument str
+    <$> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
     <*> (optional $ read <$> strOption

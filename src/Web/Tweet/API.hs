@@ -113,8 +113,8 @@ unretweetTweet :: Integer -> FilePath -> IO ()
 unretweetTweet = (fmap void) . unretweetTweetRaw
 
 -- | Unretweet a tweet and returned the (parsed) response
-unretweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
-unretweetResponse = fmap (getTweets . BSL.toStrict) .* unretweetTweetRaw
+unretweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+unretweetTweetResponse = fmap (getTweets . BSL.toStrict) .* unretweetTweetRaw
 
 -- | Unfollow a user given their screen name
 unfollow :: String -> FilePath -> IO ()
@@ -124,13 +124,21 @@ unfollow = (fmap void) . unfollowUserRaw
 follow :: String -> FilePath -> IO ()
 follow = (fmap void) . followUserRaw
 
+-- | Block a user given their screen name
+block :: String -> FilePath -> IO ()
+block = (fmap void) . blockUserRaw
+
+-- | Unblock a user given their screen name
+unblock :: String -> FilePath -> IO ()
+unblock = (fmap void) . unblockUserRaw
+
 -- | Retweet a tweet given its id
 retweetTweet :: Integer -> FilePath -> IO ()
 retweetTweet = (fmap void) . retweetTweetRaw
 
 -- | Retweet a tweet and returned the (parsed) response
-retweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
-retweetResponse = fmap (getTweets . BSL.toStrict) .* retweetTweetRaw
+retweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+retweetTweetResponse = fmap (getTweets . BSL.toStrict) .* retweetTweetRaw
 
 -- | Favorite a tweet given its id; return bytestring response
 favoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
