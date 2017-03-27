@@ -4,7 +4,7 @@
 
 ![Displaying a user timeline in a terminal.](https://raw.githubusercontent.com/vmchale/command-line-tweeter/master/screenshot.png)
 
-`tweet-hs` is a command-line tool for twitter. It has a few more features than
+`tweet-hs` is a command-line tool for twitter. It has more features than
 its [rust counterpart](https://github.com/vmchale/clit-rs) and it's a bit
 slower. 
 
