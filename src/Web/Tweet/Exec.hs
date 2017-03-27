@@ -31,6 +31,8 @@ data Command = Timeline { count :: Maybe Int }
     | Unretweet { twId :: Integer }
     | Follow { screenName :: String }
     | Unfollow { screenName :: String }
+    | Block { screenName :: String }
+    | Unblock { screenName :: String }
     | Dump { screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
@@ -93,12 +95,18 @@ selectCommand (Retweet n) color file = do
 selectCommand (Unretweet n) color file = do
     putStrLn "Unretweeted:\n"
     putStrLn =<< showTweets color <$> unretweetTweetResponse n file
-selectCommand (Follow screenName) color file = do
+selectCommand (Follow screenName) _ file = do
     follow screenName file
     putStrLn ("..." ++ screenName ++ " followed successfully!")
-selectCommand (Unfollow screenName) color file = do
+selectCommand (Unfollow screenName) _ file = do
     unfollow screenName file
     putStrLn ("..." ++ screenName ++ " unfollowed successfully!")
+selectCommand (Block screenName) color file = do
+    block screenName file
+    putStrLn ("..." ++ screenName ++ " blocked successfully")
+selectCommand (Unblock screenName) color file = do
+    unblock screenName file
+    putStrLn ("..." ++ screenName ++ " unblocked successfully")
 selectCommand (Dump screenName) color file = BSL.putStrLn =<< (getProfileRaw screenName 3200 file Nothing)
 
 -- | Parser to return a program datatype
@@ -118,7 +126,9 @@ program = Program
         <> command "rt" (info rt (progDesc "Retweet a tweet"))
         <> command "follow" (info fol (progDesc "Follow a user"))
         <> command "unfollow" (info unfol (progDesc "Unfollow a user"))
-        <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))))
+        <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))
+        <> command "block" (info blockParser (progDesc "Block a user"))
+        <> command "unblock" (info unblockParser (progDesc "Unblock a user"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'
@@ -138,19 +148,27 @@ timeline = Timeline
         <> metavar "NUM"
         <> help "number of tweetInputs to fetch, default 5"))
 
--- | Parser for the raw subcommand
+-- | Parser for the markov subcommand
 markov :: Parser Command
 markov = Markov <$> user
 
--- | Parser for the raw subcommand
+-- | Parser for the follow subcommand
 fol :: Parser Command
 fol = Follow <$> user
 
--- | Parser for the raw subcommand
+-- | Parser for the block subcommand
+blockParser :: Parser Command
+blockParser = Block <$> user
+
+-- | Parser for the unblock subcommand
+unblockParser :: Parser Command
+unblockParser = Unblock <$> user
+
+-- | Parser for the dump subcommand
 dump :: Parser Command
 dump = Dump <$> user
 
--- | Parser for the raw subcommand
+-- | Parser for the unfollow subcommand
 unfol :: Parser Command
 unfol = Unfollow <$> user
 
