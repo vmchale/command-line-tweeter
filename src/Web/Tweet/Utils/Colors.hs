@@ -14,3 +14,7 @@ toYellow = show . dullyellow . text
 -- | Make a string green
 toGreen :: String -> String
 toGreen = show . dullgreen . text
+
+-- | Make a string blue
+toBlue :: String -> String
+toBlue = show . underline . dullblue . text

@@ -32,7 +32,10 @@ getTweets = parse parseTweet ""
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((TweetEntity content user _ _ Nothing rts fave):rest) = concat [user
+displayTimeline ((TweetEntity content user screenName idTweet Nothing rts fave):rest) = concat [user
+    , " ("
+    , screenName
+    , ")"
     ,":\n    " 
     ,fixNewline content 
     ,"\n    " 
@@ -40,9 +43,14 @@ displayTimeline ((TweetEntity content user _ _ Nothing rts fave):rest) = concat 
     ,show fave 
     ," ♺ " 
     ,show rts 
+    , "  "
+    , show idTweet
     ,"\n\n" 
     ,displayTimeline rest]
-displayTimeline ((TweetEntity content user _ _ (Just quoted) rts fave):rest) = concat [user 
+displayTimeline ((TweetEntity content user screenName idTweet (Just quoted) rts fave):rest) = concat [user 
+    , " ("
+    , screenName
+    , ")"
     , ":\n    " 
     , fixNewline content 
     , "\n    " 
@@ -50,6 +58,8 @@ displayTimeline ((TweetEntity content user _ _ (Just quoted) rts fave):rest) = c
     , show fave 
     , " ♺ " 
     , show rts 
+    , "  "
+    , show idTweet
     , "\n    " 
     , _name quoted 
     , ": " 
@@ -60,7 +70,10 @@ displayTimeline [] = []
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content user _ _ Nothing rts fave):rest) = concat [toYellow user 
+displayTimelineColor ((TweetEntity content user screenName idTweet Nothing rts fave):rest) = concat [toYellow user 
+    , " ("
+    , screenName
+    , ")"
     , ":\n    " 
     , fixNewline content
     , "\n    " 
@@ -68,9 +81,14 @@ displayTimelineColor ((TweetEntity content user _ _ Nothing rts fave):rest) = co
     , show fave 
     , toGreen " ♺ " 
     , show rts 
+    , "  "
+    , toBlue (show idTweet)
     , "\n\n" 
     , displayTimelineColor rest]
-displayTimelineColor ((TweetEntity content user _ _ (Just quoted) rts fave):rest) = concat [toYellow user 
+displayTimelineColor ((TweetEntity content user screenName  idTweet (Just quoted) rts fave):rest) = concat [toYellow user 
+    , " ("
+    , screenName
+    , ")"
     , ":\n    " 
     , fixNewline content 
     , "\n    " 
@@ -78,6 +96,8 @@ displayTimelineColor ((TweetEntity content user _ _ (Just quoted) rts fave):rest
     , show fave 
     , toGreen " ♺ " 
     , show rts 
+    , "  "
+    , toBlue (show idTweet)
     , "\n    " 
     , toYellow $ _name quoted 
     , ": " 
