@@ -41,7 +41,7 @@ tweetData tweet filepath = do
 
 -- | Gets user profile with max_id set.
 getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Dec) Timeline)
-getProfileMax screenName count filepath maxId = getTweets . BSL.toStrict <$> getProfileRaw screenName count filepath maxId
+getProfileMax = fmap (getTweets . BSL.toStrict) .*** getProfileRaw
 
 -- | Gets user profile with max_id set.
 getProfileRaw :: String -> Int -> FilePath -> Maybe Int -> IO BSL.ByteString
@@ -57,11 +57,11 @@ getProfile screenName count filepath = getProfileMax screenName count filepath N
 -- | Show a user profile given screen name, how many tweets to return, 
 -- and whether to print them in color.
 showProfile :: String -> Int -> Bool -> FilePath -> IO String
-showProfile screenName count color filepath = showTweets color <$> getProfile screenName count filepath
+showProfile screenName count color = fmap (showTweets color) . getProfile screenName count
 
 -- | Show the most successful tweets by a given user, given their screen name. 
 showBest :: String -> Int -> Bool -> FilePath -> IO String
-showBest screenName n color filepath = showTweets color . pure . (take n . hits) <$> getAll screenName Nothing filepath 
+showBest screenName n color = fmap (showTweets color . pure . (take n . hits)) . getAll screenName Nothing
 
 -- | Display user timeline
 showTimeline :: Int -> Bool -> FilePath -> IO String
@@ -88,17 +88,33 @@ getTimelineRaw count = getRequest ("https://api.twitter.com/1.1/statuses/home_ti
 deleteTweet :: Integer -> FilePath -> IO ()
 deleteTweet = (fmap void) . deleteTweetRaw
 
+-- | Get response, i.e. the tweet deleted
+deleteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+deleteTweetResponse = fmap (getTweets . BSL.toStrict) .* deleteTweetRaw
+
 -- | Favorite a tweet given its id
 favoriteTweet :: Integer -> FilePath -> IO ()
 favoriteTweet = (fmap void) . favoriteTweetRaw
+
+-- | Favorite a tweet and returned the (parsed) response
+favoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+favoriteTweetResponse = fmap (getTweets . BSL.toStrict) .* favoriteTweetRaw
 
 -- | Unfavorite a tweet given its id
 unfavoriteTweet :: Integer -> FilePath -> IO ()
 unfavoriteTweet = (fmap void) . unfavoriteTweetRaw
 
+-- | Unfavorite a tweet and returned the (parsed) response
+unfavoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+unfavoriteTweetResponse = fmap (getTweets . BSL.toStrict) .* unfavoriteTweetRaw
+
 -- | Unretweet a tweet given its id
 unretweetTweet :: Integer -> FilePath -> IO ()
 unretweetTweet = (fmap void) . unretweetTweetRaw
+
+-- | Unretweet a tweet and returned the (parsed) response
+unretweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+unretweetResponse = fmap (getTweets . BSL.toStrict) .* unretweetTweetRaw
 
 -- | Unfollow a user given their screen name
 unfollow :: String -> FilePath -> IO ()
@@ -111,6 +127,10 @@ follow = (fmap void) . followUserRaw
 -- | Retweet a tweet given its id
 retweetTweet :: Integer -> FilePath -> IO ()
 retweetTweet = (fmap void) . retweetTweetRaw
+
+-- | Retweet a tweet and returned the (parsed) response
+retweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Dec) Timeline)
+retweetResponse = fmap (getTweets . BSL.toStrict) .* retweetTweetRaw
 
 -- | Favorite a tweet given its id; return bytestring response
 favoriteTweetRaw :: Integer -> FilePath -> IO BSL.ByteString
