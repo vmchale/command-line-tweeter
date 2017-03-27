@@ -8,7 +8,7 @@
   - [x] fix parser bugs
     - [ ] json extractor library? 
 - [x] documentation
-- [ ] shortcuts for color? since I end up using `show . yellow . text` so often! 
+- [x] shortcuts for color? since I end up using `show . yellow . text` so often! 
 - [x] allow nicer parsing of handles
 - [x] force functions to tweet only data of type Tweet
 - [x] improved developer ergonomics
@@ -18,7 +18,7 @@
   - [x] parser with actual commands! 
 - [x] get/process your timeline
   - [x] parse returns module?
-  - [ ] return id/ADT instead of strings
+  - [x] return id/ADT instead of strings
     - [ ] show-id option for tweets so you can reply?
     - [ ] also show-screen-name option?
 - [x] show quote tweets?
