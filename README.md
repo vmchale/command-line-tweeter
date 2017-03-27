@@ -26,7 +26,7 @@ To build from source, install [haskell stack](https://docs.haskellstack.org/en/s
 wget -qO- https://get.haskellstack.org/ | sh
 ```
 
-Then type `stack install tweet-hs` it will generate an executable called `tweet`, which is what we want.
+Then type `stack install tweet-hs` it will put an executable called `tweet` on your path.
 
 ## Use
 
@@ -41,7 +41,7 @@ tweet view
 To view a user's profile, type e.g.
 
 ```
-tweet user pinepapplesmear --color
+tweet user NateSilver538 --color
 ```
 
 ### Sending tweets

@@ -23,4 +23,5 @@
     - [ ] also show-screen-name option?
       - [x] parse screen name
 - [x] show quote tweets?
+- [ ] read credentials once + do stuff with keys in memory
 - [ ] use T.Text instead of String
