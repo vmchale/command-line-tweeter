@@ -37,9 +37,7 @@ tweetData :: Tweet -> FilePath -> IO Int
 tweetData tweet filepath = do
     let requestString = urlString tweet
     bytes <- postRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString) filepath
-    let tweets = either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
-    putStrLn $ displayTimeline tweets
-    pure . (view tweetId) . head $ tweets
+    pure . (view tweetId) . head . either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
 
 -- | Gets user profile with max_id set.
 getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Dec) Timeline)
