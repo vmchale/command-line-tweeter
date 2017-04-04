@@ -5,7 +5,7 @@ import Text.PrettyPrint.ANSI.Leijen
 
 -- | Make a string red
 toRed :: String -> String
-toRed = show . red . text
+toRed = show . dullred . text
 
 -- | Make a string yellow
 toYellow :: String -> String

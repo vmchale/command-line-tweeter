@@ -24,6 +24,7 @@ library
   exposed-modules:     Web.Tweet
                      , Web.Tweet.Exec
                      , Web.Tweet.Parser
+                     , Web.Tweet.Parser.FastParser
   other-modules:       Web.Tweet.Types
                      , Web.Tweet.Utils
                      , Web.Tweet.Utils.Colors
@@ -47,6 +48,7 @@ library
                      , directory
                      , extra
                      , composition
+                     , aeson
   default-language:    Haskell2010
 
 executable tweet

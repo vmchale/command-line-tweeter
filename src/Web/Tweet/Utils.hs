@@ -80,7 +80,8 @@ displayTimelineColor ((TweetEntity content user screenName idTweet Nothing rts f
     , ":\n    " 
     , fixNewline content
     , "\n    " 
-    , toRed "♥ " 
+    , toRed "♥"
+    , " "
     , show fave 
     , toGreen " ♺ " 
     , show rts 
@@ -95,7 +96,8 @@ displayTimelineColor ((TweetEntity content user screenName  idTweet (Just quoted
     , ":\n    " 
     , fixNewline content 
     , "\n    " 
-    , toRed "♥ " 
+    , toRed "♥"
+    , " "
     , show fave 
     , toGreen " ♺ " 
     , show rts 
