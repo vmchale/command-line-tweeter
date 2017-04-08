@@ -80,7 +80,7 @@ selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile name
 selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
 selectCommand (Markov name) _ file = do
     raw <- getMarkov name Nothing file
-    writeFile (name ++ ".txt") (unlines raw)
+    appendFile (name ++ ".txt") (unlines raw)
     putStrLn $ "Written output to: " ++ name ++ ".txt"
 selectCommand (Delete n) color file = do
     putStrLn "Deleted:\n"
