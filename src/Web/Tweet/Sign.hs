@@ -8,15 +8,10 @@ import Web.Authenticate.OAuth
 import Network.HTTP.Client
 import Web.Tweet.Types
 
--- | Sign a request using your OAuth dev token.
+-- | Sign a request using your OAuth dev token, as stored in a config file.
 -- Uses the IO monad because signatures require a timestamp
 signRequest :: FilePath -> Request -> IO Request
-signRequest filepath req = do
-    o <- oAuth filepath
-    c <- credential filepath
-    signOAuth o c req
-
--- TODO function to read a ~/.tweetrc file to a 'Config'
+signRequest = (. flip signRequestMem) . (>>=) . mkConfig
 
 -- | Sign a request using a 'Config' object, avoiding the need to read token/key from file
 signRequestMem :: Config -> Request -> IO Request
@@ -29,6 +24,12 @@ oAuth filepath = do
     key <- (lineByKey "api-key") <$> getConfigData filepath
     let url = "api.twitter.com"
     return newOAuth { oauthConsumerKey = key , oauthConsumerSecret = secret , oauthServerName = url }
+
+mkConfig :: FilePath -> IO Config
+mkConfig filepath = do
+    o <- oAuth filepath
+    c <- credential filepath
+    pure (o, c)
 
 -- | Create a new credential from a token and token secret
 credential :: FilePath -> IO Credential

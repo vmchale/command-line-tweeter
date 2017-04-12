@@ -17,19 +17,27 @@ import Data.Text.Encoding
 import Web.Tweet.Sign
 
 -- | Make a GET request to twitter given a request string
-getRequest :: String -> FilePath -> IO BSL.ByteString
-getRequest urlStr filepath = do
+getRequestMem :: String -> Config -> IO BSL.ByteString
+getRequestMem urlStr config = do
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest urlStr
-    request <- signRequest filepath $ initialRequest { method = "GET" }
+    request <- signRequestMem config $ initialRequest { method = "GET" }
     responseBS request manager
+
+-- | Make a GET request to twitter given a request string
+getRequest :: String -> FilePath -> IO BSL.ByteString
+getRequest = (. getRequestMem) . (>>=) . mkConfig 
 
 -- | Make a POST request to twitter given a request string
 postRequest :: String -> FilePath -> IO BSL.ByteString
-postRequest urlStr filepath = do
+postRequest = (. postRequestMem) . (>>=) . mkConfig 
+
+-- | Make a POST request to twitter given a request string
+postRequestMem :: String -> Config -> IO BSL.ByteString
+postRequestMem urlStr config = do
     manager <- newManager tlsManagerSettings
     initialRequest <- parseRequest urlStr
-    request <- signRequest filepath $ initialRequest { method = "POST" }
+    request <- signRequestMem config $ initialRequest { method = "POST" }
     responseBS request manager
 
 -- | Return HTTP request's result as a bytestring

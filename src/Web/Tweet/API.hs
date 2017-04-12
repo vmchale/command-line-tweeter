@@ -36,10 +36,9 @@ getAll screenName maxId filepath = do
 tweetData :: Tweet -> FilePath -> IO Int
 tweetData tweet filepath = do
     let requestString = urlString tweet
-    bytes <- postRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString) filepath
+    bytes <- postRequest ("https://api.twitter.com/1.1/statuses/update.json" ++ requestString) filepath -- FIXME fix the coloration
     putStrLn $ displayTimelineColor . either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
     pure . (view tweetId) . head . either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
--- FIXME fix the coloration
 
 -- | Gets user profile with max_id set.
 getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Dec) Timeline)
