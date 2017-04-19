@@ -26,11 +26,11 @@ getRequestMem urlStr config = do
 
 -- | Make a GET request to twitter given a request string
 getRequest :: String -> FilePath -> IO BSL.ByteString
-getRequest = (. getRequestMem) . (>>=) . mkConfig 
+getRequest = flip ((. getRequestMem) . (>>=) . mkConfig)
 
 -- | Make a POST request to twitter given a request string
 postRequest :: String -> FilePath -> IO BSL.ByteString
-postRequest = (. postRequestMem) . (>>=) . mkConfig 
+postRequest = flip ((. postRequestMem) . (>>=) . mkConfig)
 
 -- | Make a POST request to twitter given a request string
 postRequestMem :: String -> Config -> IO BSL.ByteString

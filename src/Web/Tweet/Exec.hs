@@ -12,6 +12,7 @@ import Data.Foldable (fold)
 import Data.List hiding (delete)
 import Data.Monoid hiding (getAll)
 import System.Directory
+import Data.Maybe
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color :: Bool }
@@ -20,7 +21,7 @@ data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color 
 -- TODO add boolean option to show ids alongside tweets
 data Command = Timeline { count :: Maybe Int }
     | SendInput { tweetInputs :: Maybe Int, replyId :: Maybe String, replyHandles :: Maybe [String] }
-    | Profile { count :: Maybe Int , screenName :: String }
+    | Profile { count :: Maybe Int , screenNameMaybe :: Maybe String }
     | Mentions { count :: Maybe Int }
     | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
@@ -67,17 +68,17 @@ select (Program com maybeFile color) = case maybeFile of
 
 -- | Executes subcommand given subcommand + filepath to configuration file
 selectCommand :: Command -> Bool -> FilePath -> IO ()
-selectCommand (Send maybeNum Nothing Nothing input) _ file = fromCLI input (maybe 15 id maybeNum) file
-selectCommand (Send maybeNum (Just replyId) Nothing input) _ file = thread input [] (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (Send maybeNum Nothing (Just handles) input) _ file = thread input handles Nothing (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum Nothing Nothing) _ file  = fromStdIn (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum (Just replyId) (Just handles)) _ file = threadStdIn handles (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum (Just replyId) Nothing) _ file = threadStdIn [] (pure . read $ replyId) (maybe 15 id maybeNum) file
-selectCommand (SendInput maybeNum Nothing (Just handles)) _ file = threadStdIn handles Nothing (maybe 15 id maybeNum) file
-selectCommand (Timeline maybeNum) color file = putStrLn =<< showTimeline (maybe 11 id maybeNum) color file
-selectCommand (Mentions maybeNum) color file = putStrLn =<< showTweets color <$> mentions (maybe 11 id maybeNum) file
-selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile name (maybe 11 id maybeNum) color file
-selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (maybe 11 id maybeNum) color file
+selectCommand (Send maybeNum Nothing Nothing input) _ file = fromCLI input (fromMaybe 15 maybeNum) file
+selectCommand (Send maybeNum (Just replyId) Nothing input) _ file = thread input [] (pure . read $ replyId) (fromMaybe 15 maybeNum) file
+selectCommand (Send maybeNum Nothing (Just handles) input) _ file = thread input handles Nothing (fromMaybe 15 maybeNum) file
+selectCommand (SendInput maybeNum Nothing Nothing) _ file  = fromStdIn (fromMaybe 15 maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) (Just handles)) _ file = threadStdIn handles (pure . read $ replyId) (fromMaybe 15 maybeNum) file
+selectCommand (SendInput maybeNum (Just replyId) Nothing) _ file = threadStdIn [] (pure . read $ replyId) (fromMaybe 15 maybeNum) file
+selectCommand (SendInput maybeNum Nothing (Just handles)) _ file = threadStdIn handles Nothing (fromMaybe 15 maybeNum) file
+selectCommand (Timeline maybeNum) color file = putStrLn =<< showTimeline (fromMaybe 11 maybeNum) color file
+selectCommand (Mentions maybeNum) color file = putStrLn =<< showTweets color <$> mentions (fromMaybe 11 maybeNum) file
+selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile (fromMaybe mempty name) (fromMaybe 11 maybeNum) color file
+selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (fromMaybe 11 maybeNum) color file
 selectCommand (Markov name) _ file = do
     raw <- getMarkov name Nothing file
     appendFile (name ++ ".txt") (unlines raw)
@@ -215,9 +216,7 @@ profile = Profile
         <> short 'n'
         <> metavar "NUM"
         <> help "Number of tweetInputs to fetch, default 12"))
-    <*> argument str
-        (metavar "SCREEN_NAME"
-        <> help "Screen name of user you want to view.")
+    <*> optional user 
 
 -- | Parser for the mention subcommand
 mentionsParser :: Parser Command
@@ -252,7 +251,7 @@ tweet = Send
         (long "reply"
         <> short 'r'
         <> help "id of status to reply to - be sure to include their handle, e.g. @my_build_errors"))
-    <*> (optional (some $ strOption $
+    <*> (optional (some $ strOption
         (long "handle"
         <> short 'h'
         <> metavar "HANDLE1"
@@ -273,6 +272,6 @@ tweetInput = SendInput
         (long "reply"
         <> short 'r'
         <> help "id of status to reply to - be sure to include their handle, e.g. @my_build_errors"))
-    <*> (optional $ (some $ argument str
+    <*> (optional (some $ argument str
         (metavar "HANDLE1"
         <> help "handles to include in replies")))
