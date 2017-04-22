@@ -20,7 +20,6 @@ Reasons to use tweeth-s:
   - BSD3 licensed 
 
 Reasons not to use tweet-hs:
-  - You want to extend your tools in [haskell](https://github.com/vmchale/command-line-tweeter)
   - You want "twitter in a terminal" that [rainbowtools](https://github.com/DTVD/rainbowstream)
     or [oysttyer](https://github.com/oysttyer/oysttyer) provides. 
   - You want to be able to easily tweet emoji
