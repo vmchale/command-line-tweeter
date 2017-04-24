@@ -13,7 +13,7 @@ fast = fastParse
 main = do
     file <- BS.readFile "test/data"
     defaultMain [ bgroup "parseTweet"
-                      [ bench "20" $ whnf fun file ]
-                {--, bgroup "fastParser"
-                      [ bench "20" $ whnf fast file ]--}
+                      [ bench "226" $ whnf fun file ]
+                , bgroup "fastParser"
+                      [ bench "226" $ whnf fast file ]
                 ]
