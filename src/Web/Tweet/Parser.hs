@@ -74,7 +74,7 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if isJust open then ("\\\"" :: String) else ("\\\"," :: String)
-    want <- many $ try parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- TODO modify parsec to make this parallel?
+    want <- many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- TODO modify parsec to make this parallel?
     pure want
 
 -- | Parse a newline
