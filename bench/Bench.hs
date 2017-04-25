@@ -4,7 +4,7 @@ import Criterion.Main
 import Text.Megaparsec
 import Web.Tweet.Parser
 import Web.Tweet.Parser.FastParser
-import Data.ByteString as BS
+import qualified Data.ByteString as BS
 
 fun = parse parseTweet ""
 

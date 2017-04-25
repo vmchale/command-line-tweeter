@@ -25,18 +25,18 @@ getData = do
     text <- filterStr "text"
     skipMentions
     name <- filterStr "name"
-    screenName <- filterStr "screen_name"
+    screenName' <- filterStr "screen_name"
     isQuote <- filterStr "is_quote_status"
     case isQuote of
         "false" -> do
             rts <- read <$> filterStr "retweet_count"
             faves <- read <$> filterStr "favorite_count"
-            pure (TweetEntity text name screenName id Nothing rts faves)
+            pure (TweetEntity text name screenName' id Nothing rts faves)
         "true" -> do
             quoted <- parseQuoted
             rts <- read <$> filterStr "retweet_count"
             faves <- read <$> filterStr "favorite_count"
-            pure $ TweetEntity text name screenName id quoted rts faves
+            pure $ TweetEntity text name screenName' id quoted rts faves
 
 -- | Parse a the quoted tweet
 parseQuoted :: Parser (Maybe TweetEntity)
