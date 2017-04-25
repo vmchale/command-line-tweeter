@@ -13,6 +13,8 @@ import Data.List hiding (delete)
 import Data.Monoid hiding (getAll)
 import System.Directory
 import Data.Maybe
+import Paths_tweet_hs
+import Data.Version
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color :: Bool }
@@ -55,7 +57,8 @@ threadStdIn hs idNum num filepath = do
 exec :: IO ()
 exec = execParser opts >>= select
     where
-        opts = info (helper <*> program)
+        versionInfo = infoOption ("tweet-hs version: " ++ showVersion version) (short 'v' <> long "version" <> help "Show version")
+        opts        = info (helper <*> versionInfo <*> program)
             (fullDesc
             <> progDesc "Tweet and view tweets"
             <> header "clit - a Command Line Interface Tweeter")

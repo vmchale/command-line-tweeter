@@ -10,6 +10,7 @@ import Text.Megaparsec.Lexer as L
 import Text.Megaparsec
 import Web.Tweet.Types
 import Data.Monoid
+import qualified Data.Map as M
 import Data.Maybe
 import Control.Monad
 
@@ -54,7 +55,7 @@ skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrack
 -- | Skip user mentions field to avoid parsing the wrong name
 skipMentions :: Parser ()
 skipMentions = do
-    many $ try $ anyChar >> notFollowedBy (string ("\"user_mentions\":"))
+    many $ try $ anyChar >> notFollowedBy (string "\"user_mentions\":")
     char ','
     string "\"user_mentions\":"
     skipInsideBrackets
@@ -72,8 +73,8 @@ filterTag :: String -> Parser String
 filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
-    let forbidden = if (isJust open) then ("\\\"" :: String) else ("\\\"," :: String)
-    want <- many $ noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- TODO modify parsec to make this parallel?
+    let forbidden = if isJust open then ("\\\"" :: String) else ("\\\"," :: String)
+    want <- many $ try parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- TODO modify parsec to make this parallel?
     pure want
 
 -- | Parse a newline
@@ -91,6 +92,15 @@ unicodeChar = do
 
 -- | helper function to ignore emoji
 filterEmoji str = if BS.head str == (fromIntegral . fromEnum $ 'd') then "FFFD" else str
+
+-- | Parse HTML chars
+parseHTMLChar :: Parser Char
+parseHTMLChar = do
+    char '&'
+    innards <- many $ noneOf (";" :: String)
+    char ';'
+    pure . (\(Just a) -> a) $ M.lookup innards (M.fromList [("amp",'&'),("gt",'>'),("lt",'<')])
+
 
 -- | Parse escaped characters
 specialChar :: Char -> Parser Char
