@@ -9,12 +9,11 @@ import Data.Aeson
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ByteString as BS
---import Data.Vector
 
 data FastTweet = FastTweet
     { id :: !Int
     , text :: !T.Text
-    , user :: User
+    , user :: !User
     , quoted_status :: Maybe FastTweet
     , retweet_count :: !Int
     , favorite_count :: !Int
@@ -28,5 +27,5 @@ instance FromJSON FastTweet
 
 instance FromJSON User
 
-fastParse :: BS.ByteString -> Either String [FastTweet] -- (Vector FastTweet)
+fastParse :: BS.ByteString -> Either String [FastTweet]
 fastParse = eitherDecode . BSL.fromStrict

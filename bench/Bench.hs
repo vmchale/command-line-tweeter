@@ -6,14 +6,14 @@ import Web.Tweet.Parser
 import Web.Tweet.Parser.FastParser
 import qualified Data.ByteString as BS
 
-fun = parse parseTweet ""
-
-fast = fastParse
-
 main = do
-    file <- BS.readFile "test/data"
-    defaultMain [ bgroup "parseTweet"
+    defaultMain [ env setupEnv $ \file ->
+                  bgroup "parseTweet"
                       [ bench "226" $ whnf fun file ]
-                , bgroup "fastParser"
-                      [ bench "226" $ whnf fast file ]
-                ]
+                , env setupEnv $ \file ->
+                  bgroup "fastParser"
+                      [ bench "226" $ whnf fast file ] ]
+    where fun      = parse parseTweet ""
+          fast     = fastParse
+          setupEnv = BS.readFile "test/data"
+

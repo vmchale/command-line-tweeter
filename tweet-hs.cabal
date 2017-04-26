@@ -40,7 +40,6 @@ library
                      , bytestring
                      , split
                      , optparse-applicative 
-                     -- , vector
                      , lens
                      , data-default
                      , text
