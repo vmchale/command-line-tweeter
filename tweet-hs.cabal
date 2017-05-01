@@ -40,7 +40,6 @@ library
                      , bytestring
                      , split
                      , optparse-applicative 
-                     -- , vector
                      , lens
                      , data-default
                      , text
@@ -53,6 +52,7 @@ library
                      , composition
                      , aeson
   default-language:    Haskell2010
+  default-extensions:  LambdaCase
 
 executable tweet
   hs-source-dirs:      app

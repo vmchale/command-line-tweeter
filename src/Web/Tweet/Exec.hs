@@ -135,7 +135,7 @@ program = Program
         <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))
         <> command "block" (info blockParser (progDesc "Block a user"))
         <> command "unblock" (info unblockParser (progDesc "Unblock a user"))
-        <> command "mention" (info mentionsParser (progDesc "Fetch mentions"))))
+        <> command "mentions" (info mentionsParser (progDesc "Fetch mentions"))))
     <*> (optional $ strOption
         (long "cred"
         <> short 'c'

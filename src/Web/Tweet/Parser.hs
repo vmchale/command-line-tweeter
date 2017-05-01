@@ -99,7 +99,9 @@ parseHTMLChar = do
     char '&'
     innards <- many $ noneOf (";" :: String)
     char ';'
-    pure . (\(Just a) -> a) $ M.lookup innards (M.fromList [("amp",'&'),("gt",'>'),("lt",'<')])
+    pure . (\case 
+        (Just a) -> a 
+        Nothing -> '?') $ M.lookup innards (M.fromList [("amp",'&'),("gt",'>'),("lt",'<'),("quot",'"'),("euro",'€'),("ndash",'–'),("mdash",'—')])
 
 
 -- | Parse escaped characters
