@@ -5,11 +5,7 @@ module Web.Tweet.Exec ( exec
 
 import Web.Tweet
 import Options.Applicative
-import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Control.Monad
-import Data.Foldable (fold)
-import Data.List hiding (delete)
 import Data.Monoid hiding (getAll)
 import System.Directory
 import Data.Maybe

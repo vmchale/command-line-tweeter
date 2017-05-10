@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Utils for working with the API
-module Web.Tweet.Utils.API where
+module Web.Tweet.Utils.API (
+    getRequest
+  , postRequest
+  , urlString
+  , strEncode ) where
 
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS

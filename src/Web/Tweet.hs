@@ -33,7 +33,6 @@ import Web.Tweet.Sign
 import Web.Tweet.API
 import Web.Tweet.Utils.API
 import Web.Tweet.Types
-import Web.Tweet.Utils
 import Data.List.Split (chunksOf)
 import Control.Monad
 import Control.Lens

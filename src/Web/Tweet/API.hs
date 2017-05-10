@@ -3,14 +3,11 @@
 -- | Module containing the functions directly dealing with twitter's API
 module Web.Tweet.API where
 
-import Network.HTTP.Client
-import Network.HTTP.Client.TLS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import Web.Tweet.Types
 import Web.Tweet.Utils
 import Control.Monad
 import Control.Lens
-import Web.Tweet.Sign
 import Text.Megaparsec.Error
 import Web.Tweet.Utils.API
 import Data.Composition
@@ -160,7 +157,7 @@ retweetTweetRaw id = postRequest ("https://api.twitter.com/1.1/statuses/retweet/
 
 -- | Send a DM given text, screen name of recipient.
 sendDMRaw txt screenName = postRequest ("https://api.twitter.com/1.1/direct_messages/new.json?text=" ++ encoded ++ "&screen_name" ++ screenName ++ ".json")
-    where encoded = strEncode $ txt
+    where encoded = strEncode txt
 
 -- | Get DMs, return bytestring of response
 getDMs :: Int -> FilePath -> IO BSL.ByteString

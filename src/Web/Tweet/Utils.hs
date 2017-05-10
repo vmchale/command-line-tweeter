@@ -1,14 +1,17 @@
 -- | Miscellaneous functions that don't fit the project directly
-module Web.Tweet.Utils where
+module Web.Tweet.Utils (
+    hits
+  , getTweets
+  , displayTimeline
+  , displayTimelineColor
+  , lineByKey
+  , getConfigData ) where
 
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString as BS2
-import Data.Char
 import Data.List
 import Web.Tweet.Types
-import Control.Lens.Tuple
 import Control.Lens hiding (noneOf)
-import Data.Function
 import Web.Tweet.Utils.Colors
 import Data.List.Extra
 import Web.Tweet.Parser
