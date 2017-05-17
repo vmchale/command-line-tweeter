@@ -1,19 +1,19 @@
 { mkDerivation, aeson, ansi-wl-pprint, authenticate-oauth, base
 , bytestring, composition, containers, data-default, directory
 , extra, hspec, hspec-megaparsec, http-client, http-client-tls
-, http-types, lens, megaparsec, MissingH, optparse-applicative
-, split, stdenv, text
+, http-types, lens, megaparsec, optparse-applicative, split, stdenv
+, text
 }:
 mkDerivation {
   pname = "tweet-hs";
-  version = "0.5.3.8";
+  version = "0.5.3.12";
   src = ./.;
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
     aeson ansi-wl-pprint authenticate-oauth base bytestring composition
     containers data-default directory extra http-client http-client-tls
-    http-types lens megaparsec MissingH optparse-applicative split text
+    http-types lens megaparsec optparse-applicative split text
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
