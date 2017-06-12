@@ -62,8 +62,8 @@ exec = execParser opts >>= select
 -- | Executes program given parsed `Program`
 select :: Program -> IO ()
 select (Program com maybeFile color) = case maybeFile of
-    (Just file) -> selectCommand com color file
-    _ -> selectCommand com color =<< (++ "/.cred") <$> getHomeDirectory
+    (Just file) -> selectCommand com (not color) file
+    _ -> selectCommand com (not color) =<< (++ "/.cred") <$> getHomeDirectory
 
 -- | Executes subcommand given subcommand + filepath to configuration file
 selectCommand :: Command -> Bool -> FilePath -> IO ()
@@ -140,7 +140,7 @@ program = Program
     <*> switch
         (long "color"
         <> short 'l'
-        <> help "Display timeline with colorized terminal output.")
+        <> help "Turn off colorized terminal output.")
 
 -- | Parser for the view subcommand
 timeline :: Parser Command
