@@ -136,6 +136,7 @@ program = Program
         (long "cred"
         <> short 'c'
         <> metavar "CREDENTIALS"
+        <> completer (bashCompleter "file -o plusdirs")
         <> help "path to credentials"))
     <*> switch
         (long "color"
