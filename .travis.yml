@@ -35,9 +35,9 @@ before_install:
 
 #Build dependencies
 install:
-- stack --no-terminal --install-ghc test --only-dependencies
+- stack --no-terminal --install-ghc test --only-dependencies --stack-yaml stack-8.0.yaml
 
 script:
 # Build the package, its tests, and its docs and run the tests
-- stack --no-terminal test --bench --haddock --no-haddock-deps
+- stack --no-terminal test --bench --haddock --no-haddock-deps --stack-yaml stack-8.0.yaml
   # - nix-build release.nix
