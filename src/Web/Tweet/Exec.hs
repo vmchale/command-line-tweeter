@@ -3,14 +3,14 @@ module Web.Tweet.Exec ( exec
                       , Program (..)
                       , Command (..)) where
 
-import Web.Tweet
-import Options.Applicative
 import qualified Data.ByteString.Lazy.Char8 as BSL
-import Data.Monoid hiding (getAll)
-import System.Directory
-import Data.Maybe
-import Paths_tweet_hs
-import Data.Version
+import           Data.Maybe
+import           Data.Monoid                hiding (getAll)
+import           Data.Version
+import           Options.Applicative
+import           Paths_tweet_hs
+import           System.Directory
+import           Web.Tweet
 
 -- | Data type for our program: one optional path to a credential file, (optionally) the number of tweetInputs to make, the id of the status you're replying to, and a list of users you wish to mention.
 data Program = Program { subcommand :: Command , cred :: Maybe FilePath , color :: Bool }
@@ -23,7 +23,7 @@ data Command = Timeline { count :: Maybe Int }
     | Mentions { count :: Maybe Int }
     | Markov { screenName :: String }
     | Send { tweets :: Maybe Int , replyId :: Maybe String , replyHandles :: Maybe [String] , userInput :: String }
-    | Sort { screenName :: String , count :: Maybe Int }
+    | Sort { screenName :: String , count :: Maybe Int , includeReplies :: Bool }
     | Delete { twId :: Integer }
     | Fav { twId :: Integer }
     | Unfav { twId :: Integer }
@@ -33,6 +33,8 @@ data Command = Timeline { count :: Maybe Int }
     | Unfollow { screenName :: String }
     | Block { screenName :: String }
     | Unblock { screenName :: String }
+    | Mute { screenName :: String }
+    | Unmute { screenName :: String }
     | Dump { screenName :: String }
 
 -- | query twitter to post stdin with no fancy options
@@ -51,7 +53,7 @@ threadStdIn hs idNum num filepath = do
 
 -- | Executes parser
 exec :: IO ()
-exec = execParser opts >>= select
+exec = putStrLn bird >> execParser opts >>= select
     where
         versionInfo = infoOption ("tweet-hs version: " ++ showVersion version) (short 'v' <> long "version" <> help "Show version")
         opts        = info (helper <*> versionInfo <*> program)
@@ -63,7 +65,7 @@ exec = execParser opts >>= select
 select :: Program -> IO ()
 select (Program com maybeFile color) = case maybeFile of
     (Just file) -> selectCommand com (not color) file
-    _ -> selectCommand com (not color) =<< (++ "/.cred") <$> getHomeDirectory
+    _ -> selectCommand com (not color) =<< (++ "/.cred.toml") <$> getHomeDirectory
 
 -- | Executes subcommand given subcommand + filepath to configuration file
 selectCommand :: Command -> Bool -> FilePath -> IO ()
@@ -77,7 +79,8 @@ selectCommand (SendInput maybeNum Nothing (Just handles)) _ file = threadStdIn h
 selectCommand (Timeline maybeNum) color file = putStrLn =<< showTimeline (fromMaybe 11 maybeNum) color file
 selectCommand (Mentions maybeNum) color file = putStrLn =<< showTweets color <$> mentions (fromMaybe 11 maybeNum) file
 selectCommand (Profile maybeNum name) color file = putStrLn =<< showProfile (fromMaybe mempty name) (fromMaybe 11 maybeNum) color file
-selectCommand (Sort name maybeNum) color file = putStrLn =<< showBest name (fromMaybe 11 maybeNum) color file
+selectCommand (Sort name maybeNum False) color file = putStrLn =<< showBest' name (fromMaybe 11 maybeNum) color file
+selectCommand (Sort name maybeNum True) color file = putStrLn =<< showBest name (fromMaybe 11 maybeNum) color file
 selectCommand (Markov name) _ file = do
     raw <- getMarkov name Nothing file
     appendFile (name ++ ".txt") (unlines raw)
@@ -109,6 +112,12 @@ selectCommand (Block screenName) color file = do
 selectCommand (Unblock screenName) color file = do
     unblock screenName file
     putStrLn ("..." ++ screenName ++ " unblocked successfully")
+selectCommand (Mute screenName) color file = do
+    mute screenName file
+    putStrLn ("..." ++ screenName ++ " muted successfully")
+selectCommand (Unmute screenName) color file = do
+    unmute screenName file
+    putStrLn ("..." ++ screenName ++ " unmuted successfully")
 selectCommand (Dump screenName) color file = BSL.putStrLn =<< (getProfileRaw screenName 3200 file Nothing)
 
 -- | Parser to return a program datatype
@@ -136,7 +145,7 @@ program = Program
         (long "cred"
         <> short 'c'
         <> metavar "CREDENTIALS"
-        <> completer (bashCompleter "file -o plusdirs")
+        <> completer (bashCompleter "file -X '!*.toml' -o plusdirs")
         <> help "path to credentials"))
     <*> switch
         (long "color"
@@ -216,7 +225,7 @@ profile = Profile
         <> short 'n'
         <> metavar "NUM"
         <> help "Number of tweetInputs to fetch, default 12"))
-    <*> optional user 
+    <*> optional user
 
 -- | Parser for the mention subcommand
 mentionsParser :: Parser Command
@@ -238,6 +247,10 @@ best = Sort
         <> short 'n'
         <> metavar "NUM"
         <> help "Number of tweetInputs to fetch, default 12"))
+    <*> switch
+        (long "replies"
+        <> short 'r'
+        <> help "Include replies in your all-time hits")
 
 -- | Parser for the send subcommand
 tweet :: Parser Command

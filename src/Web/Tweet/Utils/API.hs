@@ -4,6 +4,8 @@
 module Web.Tweet.Utils.API (
     getRequest
   , postRequest
+  , getRequestMem
+  , postRequestMem
   , urlString
   , strEncode ) where
 
@@ -30,11 +32,11 @@ getRequestMem urlStr config = do
 
 -- | Make a GET request to twitter given a request string
 getRequest :: String -> FilePath -> IO BSL.ByteString
-getRequest = flip ((. getRequestMem) . (>>=) . mkConfig)
+getRequest = flip ((. getRequestMem) . (>>=) . mkConfigToml)
 
 -- | Make a POST request to twitter given a request string
 postRequest :: String -> FilePath -> IO BSL.ByteString
-postRequest = flip ((. postRequestMem) . (>>=) . mkConfig)
+postRequest = flip ((. postRequestMem) . (>>=) . mkConfigToml)
 
 -- | Make a POST request to twitter given a request string
 postRequestMem :: String -> Config -> IO BSL.ByteString

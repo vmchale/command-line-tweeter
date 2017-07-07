@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             0.5.3.13
+version:             1.0.0.0
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -38,13 +38,14 @@ library
   hs-source-dirs:      src
   exposed-modules:     Web.Tweet
                      , Web.Tweet.Exec
-                     , Web.Tweet.Parser
                      , Web.Tweet.Parser.FastParser
+                     , Web.Tweet.Parser
+                     , Web.Tweet.Sign
+                     , Web.Tweet.API
   other-modules:       Web.Tweet.Types
                      , Web.Tweet.Utils
                      , Web.Tweet.Utils.Colors
-                     , Web.Tweet.Sign
-                     , Web.Tweet.API
+                     , Web.Tweet.API.Internal
                      , Web.Tweet.Utils.API
                      , Paths_tweet_hs
   build-depends:       base >= 4.7 && < 5
@@ -52,13 +53,15 @@ library
                      , http-client
                      , http-types
                      , authenticate-oauth
+                     , megaparsec
                      , bytestring
                      , split
                      , optparse-applicative 
                      , lens
+                     , unordered-containers
+                     , htoml
                      , data-default
                      , text
-                     , megaparsec
                      , containers
                      , ansi-wl-pprint
                      , directory
@@ -70,7 +73,7 @@ library
   if flag(gold) 
     ghc-options:       -optl-fuse-ld=gold
     ld-options:        -fuse-ld=gold
-  ghc-options:      -fwarn-unused-imports
+  ghc-options:         -fwarn-unused-imports
 
 executable tweet
   if flag(library)
@@ -86,27 +89,27 @@ executable tweet
     ld-options:        -fuse-ld=gold
   if flag(parallel-gc)
     ghc-options:       -rtsopts -with-rtsopts=-N
-  ghc-options:         -threaded
+  ghc-options:         -threaded -O3
   build-depends:       base
                      , tweet-hs 
   default-language:    Haskell2010
 
 benchmark tweeths-bench
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   bench
-  main-is:          Bench.hs
-  build-depends:    base
-                  , criterion
-                  , tweet-hs
-                  , megaparsec
-                  , bytestring
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      bench
+  main-is:             Bench.hs
+  build-depends:       base
+                       , criterion
+                       , tweet-hs
+                       , bytestring
+                       , megaparsec
   if flag(llvm-fast)
     ghc-options:       -fllvm -optlo-O3 -O3
   if flag(gold) 
     ghc-options:       -optl-fuse-ld=gold
     ld-options:        -fuse-ld=gold
-  ghc-options:       -threaded -rtsopts -with-rtsopts=-N -O3
-  default-language: Haskell2010
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
 
 test-suite tweeths-test
   type:                exitcode-stdio-1.0
@@ -115,8 +118,7 @@ test-suite tweeths-test
   build-depends:       base
                      , tweet-hs
                      , hspec
-                     , hspec-megaparsec
-                     , megaparsec
+                     , QuickCheck
                      , bytestring
   if flag(gold) 
     ghc-options:       -optl-fuse-ld=gold
@@ -126,4 +128,4 @@ test-suite tweeths-test
 
 source-repository head
   type:     git
-  location: https://github.com/vmchale/command-line-tweeter
+  location: https://hub.darcs.net/vmchale/tweet-hs

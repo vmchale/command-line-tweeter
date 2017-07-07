@@ -23,15 +23,20 @@ module Web.Tweet
     , module Web.Tweet.Types
     -- * Various API calls
     , module Web.Tweet.API
+    , module Web.Tweet.API.Internal
     -- * Functions to sign API requests
     , signRequest
     -- * Functions to generate a URL string from a `Tweet`
     , urlString
+    -- * Helper function to print a bird
+    , bird
     ) where
     
 import Web.Tweet.Sign
 import Web.Tweet.API
+import Web.Tweet.API.Internal
 import Web.Tweet.Utils.API
+import Web.Tweet.Utils
 import Web.Tweet.Types
 import Data.List.Split (chunksOf)
 import Control.Monad

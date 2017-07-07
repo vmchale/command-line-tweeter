@@ -1,19 +1,22 @@
 module Main where
 
-import Criterion.Main
-import Text.Megaparsec
+import           Criterion.Main
+import qualified Data.ByteString             as BS
+import           Web.Tweet.Parser.FastParser
 import Web.Tweet.Parser
-import Web.Tweet.Parser.FastParser
-import qualified Data.ByteString as BS
+import Text.Megaparsec
 
-fun = parse parseTweet ""
+setupEnv = BS.readFile "test/data"
+setupEnv' = readFile "test/data"
 
-fast = fastParse
+fast = fmap (fmap fromFast) . fastParse
 
 main = do
-    file <- BS.readFile "test/data"
-    defaultMain [ bgroup "parseTweet"
-                      [ bench "226" $ whnf fun file ]
-                , bgroup "fastParser"
+    defaultMain [
+                env setupEnv $ \ ~file ->
+                bgroup "aeson parser"
                       [ bench "226" $ whnf fast file ]
+                , env setupEnv' $ \ ~file ->
+                  bgroup "handrolled parser"
+                      [ bench "226" $ whnf (parse parseTweet) file ]
                 ]

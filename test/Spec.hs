@@ -1,23 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Test.Hspec
-import Test.Hspec.Megaparsec
-import Text.Megaparsec
-import Web.Tweet.Parser
-import qualified Data.ByteString as BS
---
-import Web.Tweet.Parser.FastParser
+import qualified Data.ByteString             as BS
+import           Test.Hspec
+import           Web.Tweet.Parser.FastParser
+import Web.Tweet.Sign
+import Data.Monoid
+import System.Environment
+import Test.QuickCheck
 
--- TODO make sure it's the right number of tweets as well
 main :: IO ()
 main = hspec $ do
-    describe "parseTweet" $ do
-        file <- runIO $ BS.readFile "test/data"
-        parallel $ it "parses sample tweets" $ do
-            parse parseTweet "" `shouldSucceedOn` file
-            {--
     describe "fastParse" $ do
         file <- runIO $ BS.readFile "test/data"
+        config <- runIO $ (<> "/.cred") <$> getEnv "HOME"
+        configToml <- runIO $ (<> "/.cred.toml") <$> getEnv "HOME"
         parallel $ it "parses sample tweets wrong" $ do
-            fastParse "" `shouldBe` Left "some error idk"
-            --}
+            fastParse "" `shouldBe` Left "Error in $: not enough input"
+        parallel $ it "parses a config file the same way with the toml parser" $
+            ((==) <$> mkConfigToml configToml <*> mkConfig config) >>= (`shouldBe` True)

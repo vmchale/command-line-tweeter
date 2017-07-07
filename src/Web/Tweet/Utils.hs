@@ -1,29 +1,41 @@
 -- | Miscellaneous functions that don't fit the project directly
 module Web.Tweet.Utils (
     hits
+  , hits'
+  , getTweetsFast
   , getTweets
   , displayTimeline
   , displayTimelineColor
   , lineByKey
+  , bird
   , getConfigData ) where
 
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString as BS2
-import Data.List
-import Web.Tweet.Types
-import Control.Lens hiding (noneOf)
-import Web.Tweet.Utils.Colors
-import Data.List.Extra
-import Web.Tweet.Parser
+import           Control.Lens                hiding (noneOf)
+import qualified Data.ByteString             as BS2
+import qualified Data.ByteString.Char8       as BS
+import           Data.List
+import           Data.List.Extra
+import           Web.Tweet.Parser.FastParser hiding (text)
+import           Web.Tweet.Parser
+import           Web.Tweet.Types
+import           Web.Tweet.Utils.Colors
 import Text.Megaparsec
 
 -- | filter out retweets, and sort by most successful.
 hits :: Timeline -> Timeline
-hits = sortTweets . filterRTs 
+hits = sortTweets . filterRTs
+
+-- | Filter out retweets and replies, and sort by most sucessful.
+hits' :: Timeline -> Timeline
+hits' = hits . filterReplies
 
 -- | Filter out retweets
 filterRTs :: Timeline -> Timeline
 filterRTs = filter ((/="RT @") . take 4 . (view text))
+
+-- | Filter out replies
+filterReplies :: Timeline -> Timeline
+filterReplies = filter ((/="@") . take 1 . (view text))
 
 -- | Filter out quotes
 filterQuotes :: Timeline -> Timeline
@@ -33,87 +45,97 @@ filterQuotes = filter ((==Nothing) . (view quoted))
 getTweets :: BS2.ByteString -> Either (ParseError Char Dec) Timeline
 getTweets = parse parseTweet "" 
 
+-- | Get a list of tweets from a response, returning author, favorites, retweets, and content.
+-- This version uses aeson, which it's far faster, but also has worse error messages.
+getTweetsFast :: BS2.ByteString -> Either String Timeline
+getTweetsFast = fmap (fmap fromFast) . fastParse
+
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
 displayTimeline ((TweetEntity content user screenName idTweet Nothing rts fave):rest) = concat [user
     , " ("
     , screenName
     , ")"
-    ,":\n    " 
-    ,fixNewline content 
-    ,"\n    " 
-    ,"♥ " 
-    ,show fave 
-    ," ♺ " 
-    ,show rts 
+    ,":\n    "
+    ,fixNewline content
+    ,"\n    "
+    , "💜"
+    -- , "♥ "
+    ,show fave
+    , " \61561  "
+    -- ," ♺ "
+    ,show rts
     , "  "
     , show idTweet
-    ,"\n\n" 
+    ,"\n\n"
     ,displayTimeline rest]
-displayTimeline ((TweetEntity content user screenName idTweet (Just quoted) rts fave):rest) = concat [user 
+displayTimeline ((TweetEntity content user screenName idTweet (Just quoted) rts fave):rest) = concat [user
     , " ("
     , screenName
     , ")"
-    , ":\n    " 
-    , fixNewline content 
-    , "\n    " 
-    , "♥ " 
-    , show fave 
-    , " ♺ " 
-    , show rts 
+    , ":\n    "
+    , fixNewline content
+    , "\n    "
+    , "💜"
+    , show fave
+    , " \61561  "
+    , show rts
     , "  "
     , show idTweet
-    , "\n    " 
-    , _name quoted 
+    , "\n    "
+    , _name quoted
     , " ("
     , _screenName quoted
     , ")"
-    , ": " 
-    , _text quoted 
-    , "\n\n" 
+    , ": "
+    , _text quoted
+    , "\n\n"
     , displayTimeline rest]
 displayTimeline [] = []
 
+bird :: String
+bird = toPlainBlue $ "🐦\n"
+
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content user screenName idTweet Nothing rts fave):rest) = concat [toYellow user 
+displayTimelineColor ((TweetEntity content user screenName idTweet Nothing rts fave):rest) = concat [toYellow user
     , " ("
     , screenName
     , ")"
-    , ":\n    " 
+    , ":\n    "
     , fixNewline content
-    , "\n    " 
-    , toRed "♥"
+    , "\n    "
+    , toRed "💜"
     , " "
-    , show fave 
-    , toGreen " ♺ " 
-    , show rts 
+    , show fave
+    , toGreen " \61561  " -- ♺ "
+    , show rts
     , "  "
     , toBlue (show idTweet)
-    , "\n\n" 
+    , "\n\n"
     , displayTimelineColor rest]
-displayTimelineColor ((TweetEntity content user screenName  idTweet (Just quoted) rts fave):rest) = concat [toYellow user 
+displayTimelineColor ((TweetEntity content user screenName  idTweet (Just quoted) rts fave):rest) = concat [toYellow user
     , " ("
     , screenName
     , ")"
-    , ":\n    " 
-    , fixNewline content 
-    , "\n    " 
-    , toRed "♥"
+    , ":\n    "
+    , fixNewline content
+    , "\n    "
+    , toRed "💜"
     , " "
-    , show fave 
-    , toGreen " ♺ " 
-    , show rts 
+    , show fave
+    , toGreen " \61561  "
+    , show rts
     , "  "
     , toBlue (show idTweet)
-    , "\n    " 
-    , toYellow $ _name quoted 
+    , "\n    "
+    , toYellow $ _name quoted
     , " ("
     , _screenName quoted
     , ")"
-    , ": " 
-    , _text quoted 
-    , "\n\n" 
+    , ": "
+    , _text quoted
+    , "\n\n"
     , displayTimelineColor rest]
 displayTimelineColor [] = []
 

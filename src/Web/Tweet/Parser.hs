@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
--- FIXME make this module available under cabal file
 -- | Module containing parsers for tweet and response data.
 module Web.Tweet.Parser ( parseTweet
                         , getData ) where
@@ -12,6 +11,8 @@ import Web.Tweet.Types
 import Data.Monoid
 import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Control.Monad
 
 -- | Parse some number of tweets
@@ -74,7 +75,7 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if isJust open then ("\\\"" :: String) else ("\\\"," :: String)
-    want <- many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> unicodeChar -- TODO modify parsec to make this parallel?
+    want <- many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> emojiChar <|> unicodeChar -- TODO modify parsec to make this parallel?
     pure want
 
 -- | Parse a newline
@@ -89,6 +90,20 @@ unicodeChar = do
     string "\\u"
     num <- fromHex . filterEmoji . BS.pack . map (fromIntegral . fromEnum) <$> count 4 anyChar
     pure . toEnum . fromIntegral $ num
+
+emojiChar :: Parser Char
+emojiChar = do
+    string "\\ud"
+    str1 <- count 3 anyChar
+    str2 <- string "\\ud" >> count 3 anyChar
+    let num = decodeUtf16 $ "d" <> str1 <> "d" <> str2
+    pure . head $ num
+
+decodeUtf16 = T.unpack . TE.decodeUtf16BE . BS.concat . go
+    where
+        go []             = []
+        go (a:b:c:d:rest) = let sym = convert16 [a,b] [c,d] in sym : go rest
+        convert16 x y = BS.pack [(read . ("0x"<>)) x, (read . ("0x"<>)) y]
 
 -- | helper function to ignore emoji
 filterEmoji str = if BS.head str == (fromIntegral . fromEnum $ 'd') then "FFFD" else str
@@ -114,3 +129,4 @@ specialChar c = do
 fromHex :: BS.ByteString -> Integer
 fromHex = fromRight . (parse (L.hexadecimal :: Parser Integer) "")
     where fromRight (Right a) = a
+          fromRight (Left x) = error (show x)

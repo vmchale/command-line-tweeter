@@ -37,13 +37,14 @@ Reasons not to use tweet-hs:
 ## Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
 
-Then place your API keys and OAuth tokens in a file `~/.cred`, separated by a line break:
+Then place your API keys and OAuth tokens in a file `~/.cred.toml`, as in the
+following example:
 
 ```
-api-key: API_KEY_HERE
-api-sec: API_SECRET_HERE
-tok: OAUTH_TOKEN_HERE
-tok-sec: TOKEN_SECRET_HERE
+api-key = "API_KEY_HERE"
+api-sec = "API_SECRET_HERE"
+tok = "OAUTH_TOKEN_HERE"
+tok-sec = "TOKEN_SECRET_HERE"
 ```
 
 ## Installation
@@ -76,13 +77,21 @@ tweet user NateSilver538 --color
 ```
 
 ### Sending tweets
+
+To send a tweet:
+
+```
+tweet send "This is my tweet"
+```
+
+#### Input from stdin
 To tweet from stderr, run a command that pipes stderr to stdin, i.e.
 
 ```
-YOUR_BUILD_COMMAND 2>&1 >/dev/null | tweet input
+stack build &>/dev/null | tweet input
 ```
 
-The `tweet` executable reads from stdIn only, but you can view the options (replies, number of tweets to thread, etc.) with
+The `tweet` executable reads from stdin only, but you can view the options (replies, number of tweets to thread, etc.) with
 
 ```
 tweet --help
