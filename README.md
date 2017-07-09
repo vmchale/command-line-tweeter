@@ -8,7 +8,7 @@
 its [rust counterpart](https://github.com/vmchale/clit-rs) and it's a bit
 slower. 
 
-Reasons to use tweeth-s:
+Reasons to use tweet-hs:
   - Faster than other tools ([t](https://github.com/sferik/t),
   [oysttyer](https://github.com/oysttyer/oysttyer))
   - Support for colored output. 
@@ -37,7 +37,7 @@ Reasons not to use tweet-hs:
 ## Config
 Generate a token to authorize access to your twitter account by following the guide [here](https://dev.twitter.com/oauth/overview/application-owner-access-tokens)
 
-Then place your API keys and OAuth tokens in a file `~/.cred.toml`, as in the
+Then place your API keys and OAuth tokens in a file `~/.cred`, as in the
 following example:
 
 ```
