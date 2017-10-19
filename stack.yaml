@@ -1,0 +1,4 @@
+---
+resolver: nightly-2017-10-19
+extra-deps:
+  - composition-prelude-0.1.1.0
