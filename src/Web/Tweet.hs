@@ -63,8 +63,8 @@ basicTweet contents = tweetData (mkTweet contents)
 -- > thread "Hi I'm back in New York!" ["friend1","friend2"] Nothing 1 ".cred"
 thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread contents hs idNum num filepath = do
-    let handleStr = concatMap (((++) " ") . ((++) "@")) hs
-    let content = (take num) . (chunksOf (140-(length handleStr))) $ contents
+    let handleStr = concatMap ((++) " " . (++) "@") hs
+    let content = take num . chunksOf (140-length handleStr) $ contents
     case idNum of
         (Just _) -> thread' content hs idNum filepath
         Nothing -> case content of
@@ -75,9 +75,9 @@ thread contents hs idNum num filepath = do
 -- | Helper function to make `thread` easier to write.
 thread' :: [String] -> [String] -> Maybe Int -> FilePath -> IO ()
 thread' content hs idNum filepath = do
-    let f = \str i -> tweetData (Tweet { _status = str, _handles = hs, _replyID = if i == 0 then Nothing else Just i }) filepath
+    let f str i = tweetData Tweet { _status = str, _handles = hs, _replyID = if i == 0 then Nothing else Just i } filepath
     let initial = f (head content)
-    lastTweet <- foldr ((>=>) . f) initial (content) $ fromMaybe 0 idNum
+    lastTweet <- foldr ((>=>) . f) initial content $ fromMaybe 0 idNum
     deleteTweet (fromIntegral lastTweet) filepath
 
 -- | Reply with a single tweet. Works the same as `thread` but doesn't take the fourth argument.
@@ -88,4 +88,4 @@ reply contents hs idNum = thread contents hs idNum 1
 
 -- | Make a `Tweet` with only the contents.
 mkTweet :: String -> Tweet
-mkTweet contents = over (status) (const (contents)) def
+mkTweet contents = over status (const contents) def

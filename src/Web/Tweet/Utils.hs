@@ -37,15 +37,15 @@ hits' = hits . filterReplies
 
 -- | Filter out retweets
 filterRTs :: Timeline -> Timeline
-filterRTs = filter ((/="RT @") . take 4 . (view text))
+filterRTs = filter ((/="RT @") . take 4 . view text)
 
 -- | Filter out replies
 filterReplies :: Timeline -> Timeline
-filterReplies = filter ((/="@") . take 1 . (view text))
+filterReplies = filter ((/="@") . take 1 . view text)
 
 -- | Filter out quotes
 filterQuotes :: Timeline -> Timeline
-filterQuotes = filter ((==Nothing) . (view quoted))
+filterQuotes = filter ((==Nothing) . view quoted)
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content.
 getTweets :: BS2.ByteString -> Either (ParseError Char Void) Timeline
@@ -58,7 +58,7 @@ getTweetsFast = fmap (fmap fromFast) . fastParse
 
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline ((TweetEntity content u sn idTweet _ Nothing rts fave):rest) = concat [u
+displayTimeline (TweetEntity content u sn idTweet _ Nothing rts fave:rest) = concat [u
     , " ("
     , sn
     , ")"
@@ -75,7 +75,7 @@ displayTimeline ((TweetEntity content u sn idTweet _ Nothing rts fave):rest) = c
     , show idTweet
     ,"\n\n"
     ,displayTimeline rest]
-displayTimeline ((TweetEntity content u sn idTweet _ (Just q) rts fave):rest) = concat [u
+displayTimeline (TweetEntity content u sn idTweet _ (Just q) rts fave:rest) = concat [u
     , " ("
     , sn
     , ")"
@@ -100,11 +100,11 @@ displayTimeline ((TweetEntity content u sn idTweet _ (Just q) rts fave):rest) = 
 displayTimeline [] = []
 
 bird :: String
-bird = toPlainBlue $ "🐦\n"
+bird = toPlainBlue "🐦\n"
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor ((TweetEntity content u sn idTweet _ Nothing rts fave):rest) = concat [toYellow u
+displayTimelineColor (TweetEntity content u sn idTweet _ Nothing rts fave:rest) = concat [toYellow u
     , " ("
     , sn
     , ")"
@@ -120,7 +120,7 @@ displayTimelineColor ((TweetEntity content u sn idTweet _ Nothing rts fave):rest
     , toBlue (show idTweet)
     , "\n\n"
     , displayTimelineColor rest]
-displayTimelineColor ((TweetEntity content u sn idTweet _ (Just q) rts fave):rest) = concat [toYellow u
+displayTimelineColor (TweetEntity content u sn idTweet _ (Just q) rts fave:rest) = concat [toYellow u
     , " ("
     , sn
     , ")"
@@ -164,11 +164,11 @@ lineByKey = snd .* head .* (filter . (fst -.* (==)))
 
 -- | Filter a line of a file for only the actual data and no descriptors
 filterLine :: String -> String
-filterLine = reverse . (takeWhile (not . (`elem` (" :" :: String)))) . reverse
+filterLine = reverse . takeWhile (not . (`elem` (" :" :: String))) . reverse
 
 -- | Get pairs of "key" to search for and actual values
 getConfigData :: FilePath -> IO [(BS.ByteString, BS.ByteString)]
 getConfigData filepath = zip <$> keys <*> content
-    where content = (map (BS.pack . filterLine)) . lines <$> file
-          keys    = (map (BS.pack . keyLinePie)) . lines <$> file
+    where content = map (BS.pack . filterLine) . lines <$> file
+          keys    = map (BS.pack . keyLinePie) . lines <$> file
           file    = readFile filepath

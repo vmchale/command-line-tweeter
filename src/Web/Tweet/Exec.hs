@@ -124,12 +124,12 @@ selectCommand (Mute sn) _ file = do
 selectCommand (Unmute sn) _ file = do
     unmute sn file
     putStrLn ("..." ++ sn ++ " unmuted successfully")
-selectCommand (Dump sn) _ file = BSL.putStrLn =<< (getProfileRaw sn 3200 file Nothing)
+selectCommand (Dump sn) _ file = BSL.putStrLn =<< getProfileRaw sn 3200 file Nothing
 
 -- | Parser to return a program datatype
 program :: Parser Program
 program = Program
-    <$> (hsubparser
+    <$> hsubparser
         (command "send" (info tweet (progDesc "Send a tweet from the command-line"))
         <> command "input" (info tweetInput (progDesc "Send a tweet from stdIn"))
         <> command "view" (info timeline (progDesc "Get your timeline"))
@@ -149,8 +149,8 @@ program = Program
         <> command "unblock" (info unblockParser (progDesc "Unblock a user"))
         <> command "mute" (info muteParser (progDesc "Mute a user"))
         <> command "unmute" (info unmuteParser (progDesc "Unmute a user"))
-        <> command "mentions" (info mentionsParser (progDesc "Fetch mentions"))))
-    <*> (optional $ strOption
+        <> command "mentions" (info mentionsParser (progDesc "Fetch mentions")))
+    <*> optional (strOption
         (long "cred"
         <> short 'c'
         <> metavar "CREDENTIALS"
@@ -164,7 +164,7 @@ program = Program
 -- | Parser for the view subcommand
 timeline :: Parser Command
 timeline = Timeline
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "count"
         <> short 'n'
         <> metavar "NUM"
@@ -197,7 +197,7 @@ unfol = Unfollow <$> user
 -- | Parser for the list subcommand
 list :: Parser Command
 list = List
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "count"
         <> short 'n'
         <> metavar "NUM"
@@ -240,14 +240,14 @@ rt = Retweet <$> getInt
 
 -- | Parser for the del subcommand
 getInt :: Parser Integer
-getInt = read <$> (argument str
+getInt = read <$> argument str
     (metavar "TWEET_ID"
-    <> help "ID of tweet"))
+    <> help "ID of tweet")
 
 -- | Parser for the user subcommand
 profile :: Parser Command
 profile = Profile
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "count"
         <> short 'n'
         <> metavar "NUM"
@@ -265,7 +265,7 @@ profile = Profile
 -- | Parser for the mention subcommand
 mentionsParser :: Parser Command
 mentionsParser = Mentions
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "count"
         <> short 'n'
         <> metavar "NUM"
@@ -277,7 +277,7 @@ best = Sort
     <$> argument str
         (metavar "SCREEN_NAME"
         <> help "Screen name of user you want to view.")
-    <*> (optional $ read <$> strOption
+    <*> optional (read <$> strOption
         (long "count"
         <> short 'n'
         <> metavar "NUM"
@@ -290,36 +290,36 @@ best = Sort
 -- | Parser for the send subcommand
 tweet :: Parser Command
 tweet = Send
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "tweets"
         <> short 't'
         <> metavar "NUM"
         <> help "Number of tweetInputs in a row, default 15"))
-    <*> (optional $ strOption
+    <*> optional (strOption
         (long "reply"
         <> short 'r'
         <> help "id of status to reply to - be sure to include their handle, e.g. @my_build_errors"))
-    <*> (optional (some $ strOption
+    <*> optional (some $ strOption
         (long "handle"
         <> short 'h'
         <> metavar "HANDLE1"
-        <> help "h to include in replies")))
-    <*> (unwords <$> (some $ argument str
+        <> help "h to include in replies"))
+    <*> (unwords <$> some (argument str
         (metavar "TEXT"
         <> help "text of tweet to be sent")))
 
 -- | Parser for the input command
 tweetInput :: Parser Command
 tweetInput = SendInput
-    <$> (optional $ read <$> strOption
+    <$> optional (read <$> strOption
         (long "tweets"
         <> short 't'
         <> metavar "NUM"
         <> help "Number of tweets in a row, default 15"))
-    <*> (optional $ strOption
+    <*> optional (strOption
         (long "reply"
         <> short 'r'
         <> help "id of status to reply to - be sure to include their handle, e.g. @my_build_errors"))
-    <*> (optional (some $ argument str
+    <*> optional (some $ argument str
         (metavar "HANDLE1"
-        <> help "h to include in replies")))
+        <> help "h to include in replies"))

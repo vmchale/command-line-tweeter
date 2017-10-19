@@ -13,15 +13,15 @@ setupEnv' :: IO String
 setupEnv' = readFile "test/data"
 
 main :: IO ()
-main = do
+main =
     defaultMain [
-                env setupEnv $ \ ~file ->
-                bgroup "aeson parser"
-                      [ bench "226" $ whnf fast file ]
-                , env setupEnv' $ \ ~file ->
-                  bgroup "handrolled parser"
-                      [ bench "226" $ whnf (parse parseTweet) file ]
-                ]
+            env setupEnv $ \ file ->
+            bgroup "aeson parser"
+                  [ bench "226" $ whnf fast file ]
+            , env setupEnv' $ \ file ->
+              bgroup "handrolled parser"
+                  [ bench "226" $ whnf (parse parseTweet) file ]
+            ]
     where
         fast = fmap (fmap fromFast) . fastParse
 

@@ -51,7 +51,7 @@ responseBS :: Request -> Manager -> IO BSL.ByteString
 responseBS request manager = do
     response <- httpLbs request manager
     let code = statusCode $ responseStatus response
-    putStr $ if (code == 200) then "" else "failed :(\n error code: " ++ (show code) ++ "\n"
+    putStr $ if code == 200 then "" else "failed :(\n error code: " ++ show code ++ "\n"
     pure . responseBody $ response
 
 -- | print output of a request and return status id as an `Int`.
@@ -68,7 +68,7 @@ urlString tweet = concat [ "?status="
                          , BS.unpack (tweetEncode tweet)
                          , "&trim_user="
                          , map toLower (show trim)
-                         , (if isJust (_replyID tweet) then "&in_reply_to_status_id=" else "")
+                         , if isJust (_replyID tweet) then "&in_reply_to_status_id=" else ""
                          , reply ]
     where trim  = False
           reply = fromMaybe "" (show <$> _replyID tweet)
@@ -81,5 +81,5 @@ strEncode = BS.unpack . paramEncode . encodeUtf8 . T.pack
 tweetEncode :: Tweet -> BS.ByteString
 tweetEncode tweet = paramEncode . encodeUtf8 $ handleStr `T.append` content
     where content   = T.pack . _status $ tweet
-          handleStr = T.pack $ concatMap ((++ " ") . ((++) "@")) hs
+          handleStr = T.pack $ concatMap ((++ " ") . (++) "@") hs
           hs        = _handles tweet
