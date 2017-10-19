@@ -1,0 +1,5 @@
+with-compiler: ghc-8.2.1
+optimization: 2
+documentation: True
+haddock-hoogle: True
+haddock-internal: True

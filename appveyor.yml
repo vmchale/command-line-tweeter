@@ -1,0 +1,35 @@
+---
+
+build: off
+
+before_test:
+  - set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
+
+  - curl -sS -ostack.zip -L --insecure http://www.stackage.org/stack/windows-i386
+  - 7z x stack.zip stack.exe
+
+clone_folder: "c:\\stack"
+environment:
+  global:
+    STACK_ROOT: "c:\\sr"
+
+test_script:
+  - stack setup > nul
+  - echo "" | stack --no-terminal install
+  - ps: Get-ChildItem . -name -recurse tweet.exe
+  - ps: Copy-Item c:\\stack\\.stack-work\\install\\02d5bcd9\\bin\\tweet.exe tweet-x86_64-pc-windows.exe
+  - ps: Push-AppveyorArtifact tweet-x86_64-pc-windows.exe
+
+deploy:
+  artifacts: tweet-x86_64-pc-windows.exe
+  provider: GitHub
+  on:
+    appveyor_repo_tag: true
+  auth_token:
+    secure: 0qzMr6xmEwRoj/9TJOgDuW/LXWfGVM/4A7kvAXGe0BAwWCF13AWE2SARrYkyc3ji
+
+branches:
+  only:
+    # Release tags
+    - master
+    - /\d+\.\d+\.\d+\.\d+.*$/

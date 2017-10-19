@@ -1,0 +1,128 @@
+name:                tweet-hs
+version:             1.0.1.9
+synopsis:            Command-line tool for twitter
+description:         a Command Line Interface Tweeter
+homepage:            https://github.com/vmchale/command-line-tweeter#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Vanessa McHale
+maintainer:          vanessa.mchale@reconfigure.io
+copyright:           2016, 2017 Vanessa McHale
+category:            Web
+build-type:          Simple
+stability:           stable
+extra-source-files:  README.md, cabal.project.local, bash/mkCompletions, test/data
+cabal-version:       >=1.10
+
+Flag llvm-fast {
+  Description: Enable build with llvm backend
+  Default: False
+}
+
+Flag library {
+  Description: Don't build an executable
+  Default:     False
+}
+
+Flag development {
+  Description: Enable -Werror
+  Default: False
+  Manual: True
+}
+
+Flag parallel-gc {
+  Description: Use parallel garbage collector
+  Default:     False
+}
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Web.Tweet
+                     , Web.Tweet.Exec
+                     , Web.Tweet.Parser.FastParser
+                     , Web.Tweet.Parser
+                     , Web.Tweet.Sign
+                     , Web.Tweet.API
+  other-modules:       Web.Tweet.Types
+                     , Web.Tweet.Utils
+                     , Web.Tweet.Utils.Colors
+                     , Web.Tweet.API.Internal
+                     , Web.Tweet.Utils.API
+                     , Paths_tweet_hs
+  build-depends:       base >= 4.9 && < 5
+                     , http-client-tls
+                     , http-client
+                     , http-types
+                     , authenticate-oauth
+                     , megaparsec >= 6.0
+                     , bytestring
+                     , split
+                     , optparse-applicative 
+                     , lens
+                     , unordered-containers
+                     , htoml
+                     , data-default
+                     , text
+                     , containers
+                     , ansi-wl-pprint
+                     , directory
+                     , composition-prelude
+                     , extra
+                     , aeson
+  default-language:    Haskell2010
+  default-extensions:  LambdaCase
+  if flag(development)
+    ghc-options:       -Werror
+  ghc-options:         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+
+executable tweet
+  if flag(library)
+    Buildable: False
+  else
+    Buildable: True
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  if flag(llvm-fast)
+    ghc-options:       -fllvm -optlo-O3 -O3
+  if flag(parallel-gc)
+    ghc-options:       -rtsopts -with-rtsopts=-N
+  if flag(development)
+    ghc-options:       -Werror
+  ghc-options:         -threaded -O3 -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  build-depends:       base
+                     , tweet-hs 
+  default-language:    Haskell2010
+
+benchmark tweeths-bench
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      bench
+  main-is:             Bench.hs
+  build-depends:       base
+                       , criterion
+                       , tweet-hs
+                       , bytestring
+                       , megaparsec
+  if flag(llvm-fast)
+    ghc-options:       -fllvm -optlo-O3 -O3
+  if flag(development)
+    ghc-options:       -Werror
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  default-language:    Haskell2010
+
+test-suite tweeths-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , tweet-hs
+                     , hspec
+                     , QuickCheck
+                     , bytestring
+  if flag(development)
+    ghc-options:       -Werror
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://hub.darcs.net/vmchale/tweet-hs
