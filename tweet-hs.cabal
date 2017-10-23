@@ -61,7 +61,7 @@ library
                      , optparse-applicative 
                      , lens
                      , unordered-containers
-                     , htoml
+                     , htoml-megaparsec
                      , data-default
                      , text
                      , containers
