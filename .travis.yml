@@ -17,6 +17,7 @@ matrix:
     # OS X
     - env: TARGET=x86_64-apple-darwin
       os: osx
+      language: default
 
 before_install:
   - mkdir -p ~/.local/bin
