@@ -37,8 +37,8 @@ install:
 
 script:
   - stack --no-terminal build --haddock --no-haddock-deps
-  - stack test
-  - stack bench
+  - stack test --no-run-tests
+  - stack bench --no-bench
   - hlint .
   - weeder .
   - |

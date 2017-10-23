@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             1.0.1.12
+version:             1.0.1.13
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -116,8 +116,6 @@ test-suite tweeths-test
   build-depends:       base
                      , tweet-hs
                      , hspec
-                     , QuickCheck
-                     , bytestring
   if flag(development)
     ghc-options:       -Werror
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
