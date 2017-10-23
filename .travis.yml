@@ -30,6 +30,7 @@ before_install:
       curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
     fi
   - chmod a+x ~/.local/bin/stack
+  - pip install yamllint
 
 install:
   - stack --no-terminal --install-ghc test --only-dependencies
@@ -38,6 +39,9 @@ install:
 script:
   - stack --no-terminal build --haddock --no-haddock-deps
   - stack test --no-run-tests
+  - yamllint stack.yaml
+  - yamllint appveyor.yml
+  - yamllint .travis.yml
   - stack bench --no-bench
   - hlint .
   - weeder .
@@ -54,7 +58,7 @@ script:
 
 deploy:
   api_key:
-     secure: "bdJVbM9pdNqkeQb9O4mUocyA+zLAHupCLUYMPyi5jZVXF5hDPQeB93C7bMb+G4DzfYdDhDvy/VACYSGWnV2JwbSDObtAi8//wiN4Ir/AjK6aELEF8oVuoPOr4geIOMpjcUbT5JZhqqTF4Ogtd0jW97eg6LnkOZj/Nmirk7NL9FV85r3iw1MEIWBsLdHbpHKgyItOo2YKh0dM3QTZ3tjaeEhEVgd4VQQlEB2SAtueOu/lJhbjT6Y7ztGLW+UXE6ITXuG623ewA8tXt8oyeDx0HES04RVnfkDN7QIDC7Crcx7Q7Kb+yCc1cRe9QQ/9/kaeloCYd0XAKf+Bd1kyH2MIm+/Pnriz5pkM+2z1xEUhTXqXM6Wm1cXHVXRUHJQWayii1TSDp8DhVVoz8N0L3GMEIIJi1rdkO4qA84JcZkQFnH4NhvVK9Bkd/a++h6vh2WOg/nvwnOUBooNLkKik78PrIgpgTapW8yFyXrOlVqtQ9sdCmhrpQGn7Ja1P2z3tNmZgSvIcyhx/SLgHegPae5EJ9roFWRNJ9A/tlgyqNbxBdr5hLWSo3zqyJXj51cqd68tp09lloXLlC9Q2HlAejenfWYQ4KEwT1A8u+cK9lJ7pN+hgmlbQFCz9aYzokD6CCzsdJo01yQMCW2LtlKEeWiUVuA3MrWZ3l+oFQ6/npGQoOQY="
+    secure: "bdJVbM9pdNqkeQb9O4mUocyA+zLAHupCLUYMPyi5jZVXF5hDPQeB93C7bMb+G4DzfYdDhDvy/VACYSGWnV2JwbSDObtAi8//wiN4Ir/AjK6aELEF8oVuoPOr4geIOMpjcUbT5JZhqqTF4Ogtd0jW97eg6LnkOZj/Nmirk7NL9FV85r3iw1MEIWBsLdHbpHKgyItOo2YKh0dM3QTZ3tjaeEhEVgd4VQQlEB2SAtueOu/lJhbjT6Y7ztGLW+UXE6ITXuG623ewA8tXt8oyeDx0HES04RVnfkDN7QIDC7Crcx7Q7Kb+yCc1cRe9QQ/9/kaeloCYd0XAKf+Bd1kyH2MIm+/Pnriz5pkM+2z1xEUhTXqXM6Wm1cXHVXRUHJQWayii1TSDp8DhVVoz8N0L3GMEIIJi1rdkO4qA84JcZkQFnH4NhvVK9Bkd/a++h6vh2WOg/nvwnOUBooNLkKik78PrIgpgTapW8yFyXrOlVqtQ9sdCmhrpQGn7Ja1P2z3tNmZgSvIcyhx/SLgHegPae5EJ9roFWRNJ9A/tlgyqNbxBdr5hLWSo3zqyJXj51cqd68tp09lloXLlC9Q2HlAejenfWYQ4KEwT1A8u+cK9lJ7pN+hgmlbQFCz9aYzokD6CCzsdJo01yQMCW2LtlKEeWiUVuA3MrWZ3l+oFQ6/npGQoOQY="
   file: tweet-$TARGET
   on:
     tags: true
