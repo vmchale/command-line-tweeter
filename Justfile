@@ -18,6 +18,7 @@ upload:
 release:
     git tag "$(grep -P -o '\d+\.\d+\.\d+\.\d+' tweet-hs.cabal | head -n1)"
     git push origin --tags
+    git tag -d "$(grep -P -o '\d+\.\d+\.\d+\.\d+' tweet-hs.cabal | head -n1)"
 
 install:
     cabal new-build --constraint='tweet-hs +llvm-fast'
