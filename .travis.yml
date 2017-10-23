@@ -1,6 +1,6 @@
 ---
 sudo: false
-language: default
+language: python
 cache:
   directories:
     - $HOME/.stack
