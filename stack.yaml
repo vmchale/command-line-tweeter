@@ -2,3 +2,4 @@
 resolver: nightly-2017-10-19
 extra-deps:
   - composition-prelude-0.1.1.0
+  - htoml-megaparsec-1.0.1.11
