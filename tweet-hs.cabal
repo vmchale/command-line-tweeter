@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             1.0.1.14
+version:             1.0.1.15
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -43,8 +43,9 @@ library
                      , Web.Tweet.Parser
                      , Web.Tweet.Sign
                      , Web.Tweet.API
-  other-modules:       Web.Tweet.Types
                      , Web.Tweet.Utils
+                     -- FIXME move to other-modules!!
+  other-modules:       Web.Tweet.Types
                      , Web.Tweet.Utils.Colors
                      , Web.Tweet.API.Internal
                      , Web.Tweet.Utils.API
