@@ -1,6 +1,5 @@
 ---
 sudo: false
-language: python
 cache:
   directories:
     - $HOME/.stack
@@ -13,6 +12,7 @@ matrix:
 
     # Linux
     - env: TARGET=x86_64-unkown-linux-gnu
+      language: python
 
     # OS X
     - env: TARGET=x86_64-apple-darwin
@@ -29,7 +29,13 @@ before_install:
       curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
     fi
   - chmod a+x ~/.local/bin/stack
-  - pip install yamllint
+  - |
+    if [ `uname` = "Linux" ]
+    then
+      pip install yamllint
+    else
+      echo "skipping yaml verification..."
+    fi
 
 install:
   - stack --no-terminal --install-ghc test --only-dependencies
@@ -38,9 +44,15 @@ install:
 script:
   - stack --no-terminal build --haddock --no-haddock-deps
   - stack test --no-run-tests
-  - yamllint stack.yaml
-  - yamllint appveyor.yml
-  - yamllint .travis.yml
+  - |
+    if [ `uname` = "Linux" ]
+    then
+      yamllint stack.yaml
+      yamllint appveyor.yml
+      yamllint .travis.yml
+    else
+      echo "skipping yaml verification..."
+    fi
   - stack bench --no-bench
   - hlint .
   - weeder .
