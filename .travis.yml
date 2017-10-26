@@ -62,7 +62,7 @@ script:
     then
       export BINPATH="$(find . -name tweet -perm 755 | tail -n1)"
     else
-      export BINPATH="$(find -name tweet -executable | tail -n2 | head -n1)"
+      export BINPATH="$(find -name tweet -executable | head -n1)"
     fi
   - echo $BINPATH
   - mv $BINPATH tweet-$TARGET
