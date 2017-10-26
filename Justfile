@@ -21,8 +21,8 @@ release:
     git tag -d "$(grep -P -o '\d+\.\d+\.\d+\.\d+' tweet-hs.cabal | head -n1)"
 
 install:
-    cabal new-build --constraint='tweet-hs +llvm-fast'
-    cp $(fd 'tweet$' -I | tail -n1) ~/.local/bin
+    @cabal new-build --constraint='tweet-hs +llvm-fast'
+    @cp $(fd 'tweet$' -I | tail -n1) ~/.local/bin
 
 name:
     github-release edit -s $(cat .git-token) -u vmchale -r command-line-tweeter -n "$(madlang run ~/programming/madlang/releases/releases.mad)" -t "$(grep -P -o '\d+\.\d+\.\d+\.\d+' tweet-hs.cabal | head -n1)"
