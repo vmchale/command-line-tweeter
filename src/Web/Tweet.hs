@@ -64,7 +64,7 @@ basicTweet contents = tweetData (mkTweet contents)
 thread :: String -> [String] -> Maybe Int -> Int -> FilePath -> IO ()
 thread contents hs idNum num filepath = do
     let handleStr = concatMap ((++) " " . (++) "@") hs
-    let content = take num . chunksOf (140-length handleStr) $ contents
+    let content = take num . chunksOf (280-length handleStr) $ contents
     case idNum of
         (Just _) -> thread' content hs idNum filepath
         Nothing -> case content of
