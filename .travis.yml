@@ -58,7 +58,6 @@ script:
     if [ `uname` = "Linux" ]
     then
       curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s .
-      curl -sL https://raw.github.com/ndmitchell/weeder/master/misc/travis.sh | sh -s .
     else
       echo 'skipping hlint/weeder...'
     fi
@@ -67,6 +66,7 @@ script:
     then
       export BINPATH="$(find . -name tweet -perm 755 | tail -n1)"
     else
+      curl -sL https://raw.github.com/ndmitchell/weeder/master/misc/travis.sh | sh -s .
       export BINPATH="$(find -name tweet -executable | head -n1)"
     fi
   - echo $BINPATH
