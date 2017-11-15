@@ -1,3 +1,6 @@
+check:
+    git diff master origin/master
+
 next:
     @export VERSION=$(cat tweet-hs.cabal | grep -P -o '\d+\.\d+\.\d+\.\d+' tweet-hs.cabal | head -n1 | awk -F. '{$NF+=1; print $0}' | sed 's/ /\./g') && echo $VERSION && sed -i "2s/[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+/$VERSION/" tweet-hs.cabal
     @git commit -am "release/CI"
