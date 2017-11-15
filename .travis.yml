@@ -57,7 +57,7 @@ script:
   - |
     if [ `uname` = "Linux" ]
     then
-      curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s .
+      curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s src app bench test Setup.hs
       curl -sL https://raw.github.com/ndmitchell/weeder/master/misc/travis.sh | sh -s .
     else
       echo 'skipping hlint/weeder...'
