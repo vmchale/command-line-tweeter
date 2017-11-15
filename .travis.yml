@@ -53,7 +53,7 @@ script:
     else
       echo "skipping yaml verification..."
     fi
-  - stack bench --no-bench
+  - stack bench --no--run-benchmarks
   - |
     if [ `uname` = "Linux" ]
     then
