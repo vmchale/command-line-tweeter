@@ -39,7 +39,7 @@ before_install:
     fi
 
 install:
-  - travis_wait stack --no-terminal --install-ghc test --only-dependencies
+  - travis_wait 30 stack --no-terminal --install-ghc test --only-dependencies
 
 script:
   - stack --no-terminal build --haddock --no-haddock-deps
