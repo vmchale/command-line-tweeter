@@ -42,8 +42,7 @@ install:
   - travis_wait 30 stack --no-terminal --install-ghc test --only-dependencies
 
 script:
-  - stack --no-terminal build --haddock --no-haddock-deps
-  - stack test --no-run-tests
+  - stack --no-terminal build --haddock --no-haddock-deps --test --no-run-tests --bench --no-run-benchmarks
   - |
     if [ `uname` = "Linux" ]
     then
@@ -53,7 +52,6 @@ script:
     else
       echo "skipping yaml verification..."
     fi
-  - stack bench --no--run-benchmarks
   - |
     if [ `uname` = "Linux" ]
     then
