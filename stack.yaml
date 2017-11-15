@@ -1,5 +1,5 @@
 ---
-resolver: nightly-2017-10-19
+resolver: nightly-2017-11-15
 extra-deps:
   - composition-prelude-0.1.1.0
   - htoml-megaparsec-1.0.1.11

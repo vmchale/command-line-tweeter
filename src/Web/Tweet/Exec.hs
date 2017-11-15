@@ -5,7 +5,7 @@ module Web.Tweet.Exec ( exec
 
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Maybe
-import           Data.Monoid                hiding (getAll)
+import           Data.Monoid
 import           Data.Version
 import           Options.Applicative
 import           Paths_tweet_hs

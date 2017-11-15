@@ -71,7 +71,7 @@ urlString tweet = concat [ "?status="
                          , if isJust (_replyID tweet) then "&in_reply_to_status_id=" else ""
                          , reply ]
     where trim  = False
-          reply = fromMaybe "" (show <$> _replyID tweet)
+          reply = maybe "" show (_replyID tweet)
 
 -- | Percent-encode a string
 strEncode :: String -> String
