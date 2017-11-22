@@ -1,5 +1,5 @@
 name:                tweet-hs
-version:             1.0.1.32
+version:             1.0.1.33
 synopsis:            Command-line tool for twitter
 description:         a Command Line Interface Tweeter
 homepage:            https://github.com/vmchale/command-line-tweeter#readme
@@ -89,7 +89,7 @@ executable tweet
     ghc-options:       -rtsopts -with-rtsopts=-N
   if flag(development)
     ghc-options:       -Werror
-  ghc-options:         -threaded -O3 -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  ghc-options:         -O3 -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
   build-depends:       base
                      , tweet-hs 
   default-language:    Haskell2010

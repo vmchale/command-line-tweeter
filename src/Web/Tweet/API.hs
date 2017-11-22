@@ -7,6 +7,7 @@ import           Control.Composition
 import           Control.Lens
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import           Data.Maybe                 (isJust)
 import           Data.Void
 import           Text.Megaparsec.Error
 import           Web.Tweet.Types
@@ -21,13 +22,15 @@ getMarkov = fmap (map (view text)) .** getAll
 getAll :: String -> Maybe Int -> FilePath -> IO Timeline
 getAll sn maxId filepath = do
     tweets <- either (error "Parse tweets failed") id <$> getProfileMax sn 200 filepath maxId
-    let lastId = _tweetId . last $ tweets
-    if Just lastId == maxId then
+    let lastId = _tweetId <$> tweets^?_last
+    if lastId == maxId then
         pure []
     else
         do
-            putStrLn $ "fetching tweets since " ++ show lastId ++ "..."
-            next <- getAll sn (Just lastId) filepath
+            if isJust lastId
+                then putStrLn $ "fetching tweets since " ++ show (lastId^?!_Just) ++ "..."
+                else pure ()
+            next <- getAll sn lastId filepath
             pure (tweets ++ next)
 
 -- | tweet, given a `Tweet` and a `Config` containing necessary data to sign the request.

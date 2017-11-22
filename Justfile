@@ -1,3 +1,7 @@
+bench:
+    bench "tw user -n13" "tweet user -n13"
+# t timeline
+
 check:
     git diff master origin/master
 
