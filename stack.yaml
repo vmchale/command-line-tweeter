@@ -1,6 +1,6 @@
 ---
-resolver: lts-9.11
+resolver: nightly-2018-04-03
 extra-deps:
-  - composition-prelude-0.1.1.0
-  - htoml-megaparsec-1.0.1.11
-  - megaparsec-6.2.0
+  - composition-prelude-1.3.0.8
+  - htoml-megaparsec-1.1.0.2
+  - megaparsec-6.5.0

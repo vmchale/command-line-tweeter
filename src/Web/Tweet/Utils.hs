@@ -15,12 +15,12 @@ module Web.Tweet.Utils (
   ) where
 
 import           Control.Composition
-import           Control.Lens
 import qualified Data.ByteString             as BS2
 import qualified Data.ByteString.Char8       as BS
 import           Data.List
 import           Data.List.Extra
 import           Data.Void
+import           Lens.Micro.Extras
 import           Text.Megaparsec
 import           Web.Tweet.Parser
 import           Web.Tweet.Parser.FastParser hiding (text)

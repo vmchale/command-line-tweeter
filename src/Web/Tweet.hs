@@ -39,11 +39,11 @@ module Web.Tweet
     , bird
     ) where
 
-import           Control.Lens
 import           Control.Monad
 import           Data.Default
 import           Data.List.Split        (chunksOf)
 import           Data.Maybe
+import           Lens.Micro
 import           Web.Tweet.API
 import           Web.Tweet.API.Internal
 import           Web.Tweet.Sign

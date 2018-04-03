@@ -1,3 +1,5 @@
+- [ ] valgrind: memory leak??
+
 - [ ] htoml-megaparsec
 - [x] allow to override with custom credential file
 - [x] parse credentials intelligently by key

@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- import qualified Data.ByteString             as BS
-import           Data.Monoid
 import           System.Environment
 import           Test.Hspec
 import           Web.Tweet.Parser.FastParser

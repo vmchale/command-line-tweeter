@@ -4,9 +4,9 @@
 -- | Exports the `Tweet` type, a datatype for building tweets easily
 module Web.Tweet.Types where
 
-import           Control.Lens
 import           Data.Default
 import           GHC.Generics
+import           Lens.Micro
 import           Web.Authenticate.OAuth
 
 -- | Data type for our request: consists of the status text, whether to trium u information in the response, the handles to mention, and optionally the id of the status to reply to.

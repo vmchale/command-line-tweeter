@@ -10,9 +10,10 @@ next:
     @git commit -am "release/CI"
 
 ci:
-    cabal new-build
+    cabal new-build all
     cabal new-test
-    cabal new-bench
+    stack build --test --bench --no-run-tests --no-run-benchmarks
+    weeder .
 
 size:
     sn d $(fd 'tweet$' -I | tail -n1)

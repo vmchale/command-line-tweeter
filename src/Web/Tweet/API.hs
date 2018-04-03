@@ -4,11 +4,12 @@
 module Web.Tweet.API where
 
 import           Control.Composition
-import           Control.Lens
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Maybe                 (isJust)
 import           Data.Void
+import           Lens.Micro
+import           Lens.Micro.Extras
 import           Text.Megaparsec.Error
 import           Web.Tweet.Types
 import           Web.Tweet.Utils

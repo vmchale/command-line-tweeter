@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | Module containing parsers for tweet and response data.
 module Web.Tweet.Parser ( parseTweet
                         , getData ) where
@@ -10,7 +11,6 @@ import Text.Megaparsec.Byte
 import Text.Megaparsec.Byte.Lexer as L
 import Text.Megaparsec
 import Web.Tweet.Types
-import Data.Monoid
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -97,8 +97,7 @@ filterTag str = do
     string $ "\"" <> str <> "\":"
     open <- optional $ char '\"'
     let forbidden = if isJust open then ("\\\"" :: String) else ("\\\"," :: String)
-    want <- many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> emojiChar <|> unicodeChar -- TODO modify parsec to make this parallel?
-    pure want
+    many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> emojiChar <|> unicodeChar -- TODO modify parsec to make this parallel?
 
 -- | Parse a newline
 newlineChar :: Parser Char

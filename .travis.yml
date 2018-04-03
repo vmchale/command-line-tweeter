@@ -69,7 +69,7 @@ script:
     fi
   - echo $BINPATH
   - mv $BINPATH tweet-$TARGET
-  - ls tweet-$TARGET
+  - strip tweet-$TARGET
 
 deploy:
   api_key:
