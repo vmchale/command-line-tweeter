@@ -3,8 +3,8 @@ name: tweet-hs
 version: 1.0.1.36
 license: BSD3
 license-file: LICENSE
-copyright: 2016, 2017 Vanessa McHale
-maintainer: vanessa.mchale@reconfigure.io
+copyright: 2016-2018 Vanessa McHale
+maintainer: vamchale@gmail.com
 author: Vanessa McHale
 stability: stable
 homepage: https://github.com/vmchale/command-line-tweeter#readme
