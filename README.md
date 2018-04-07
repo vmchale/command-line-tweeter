@@ -2,6 +2,7 @@
 
 [![Windows build status](https://ci.appveyor.com/api/projects/status/github/vmchale/command-line-tweeter?svg=true)](https://ci.appveyor.com/project/vmchale/command-line-tweeter)
 [![Build Status](https://travis-ci.org/vmchale/command-line-tweeter.svg?branch=master)](https://travis-ci.org/vmchale/command-line-tweeter)
+[![Hackage](https://img.shields.io/hackage/v/tweet-hs.svg)](http://hackage.haskell.org/package/tweet-hs)
 
 ![Displaying a user timeline in a terminal.](https://raw.githubusercontent.com/vmchale/command-line-tweeter/master/screenshot.png)
 
