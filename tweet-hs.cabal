@@ -1,6 +1,6 @@
 cabal-version: >=1.10
 name: tweet-hs
-version: 1.0.1.37
+version: 1.0.1.41
 license: BSD3
 license-file: LICENSE
 copyright: 2016-2018 Vanessa McHale
@@ -15,6 +15,7 @@ category: Web
 build-type: Simple
 extra-source-files:
     README.md
+    CHANGELOG.md
     cabal.project.local
     bash/mkCompletions
     test/data
@@ -68,12 +69,12 @@ library
         http-client -any,
         http-types -any,
         authenticate-oauth -any,
-        megaparsec >=6.0,
+        megaparsec >=7.0,
         bytestring -any,
         split -any,
         microlens -any,
         unordered-containers -any,
-        htoml-megaparsec -any,
+        htoml-megaparsec >=2.1.0.0,
         data-default -any,
         text -any,
         containers -any,

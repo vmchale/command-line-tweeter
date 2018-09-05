@@ -59,43 +59,27 @@ parseQuoted = do
 
 -- | Skip a set of square brackets []
 skipInsideBrackets :: Parser ()
-skipInsideBrackets = void (between (char '[') (char ']') $ many (skipInsideBrackets <|> void (noneOf ("[]" :: String))))
+skipInsideBrackets = void (between (single '[') (single ']') $ many (skipInsideBrackets <|> void (noneOf ("[]" :: String))))
 
 -- | Skip user mentions field to avoid parsing the wrong n
 skipMentions :: Parser ()
 skipMentions = do
-    many $ try $ anyChar >> notFollowedBy (string "\"user_mentions\":")
+    many $ try $ anySingle >> notFollowedBy (string "\"user_mentions\":")
     string ",\"user_mentions\":"
     skipInsideBrackets
 
 -- | Throw out input until we get to a relevant tag.
 filterStr :: String -> Parser String
 filterStr str = do
-    many $ try $ anyChar >> notFollowedBy (string ("\"" <> str <> "\":"))
-    char ','
+    many $ try $ anySingle >> notFollowedBy (string ("\"" <> str <> "\":"))
+    single ','
     filterTag str
-
-{-
-filterList :: Parser [String]
-filterList = try $ do
-    many $ try $ anyChar >> notFollowedBy (string ("\"withheld_in_countries\":"))
-    char ','
-    filterWithheld
-
-
-filterWithheld :: Parser [String]
-filterWithheld = do
-    string "\"withheld_in_countries\":[\""
-    codes <- some $ do { char '\"' ; interior <- many (noneOf ("\"]" :: String)) ; char '\"' ; optional (char ',') ; pure interior }
-    char ']'
-    pure codes
-    -}
 
 -- | Parse a field given its tag
 filterTag :: String -> Parser String
 filterTag str = do
     string $ "\"" <> str <> "\":"
-    open <- optional $ char '\"'
+    open <- optional $ single '\"'
     let forbidden = if isJust open then ("\\\"" :: String) else ("\\\"," :: String)
     many $ parseHTMLChar <|> noneOf forbidden <|> specialChar '\"' <|> specialChar '/' <|> newlineChar <|> emojiChar <|> unicodeChar -- TODO modify parsec to make this parallel?
 
@@ -106,12 +90,12 @@ newlineChar = string "\\n" >> pure '\n'
 -- | Parser for unicode; twitter will give us something like "/u320a"
 unicodeChar :: Parser Char
 unicodeChar = toEnum . fromIntegral . f <$> go
-    where go = string "\\u" >> count 4 anyChar
+    where go = string "\\u" >> count 4 anySingle
           f = fromHex . filterEmoji . BS.pack . fmap (fromIntegral . fromEnum) 
 
 emojiChar :: Parser Char
 emojiChar = go a
-    where a = string "\\ud" >> count 3 anyChar
+    where a = string "\\ud" >> count 3 anySingle
           go = (<*>) =<< (((T.head . decodeUtf16) .* ((<>) . (<> "d") . ("d" <>))) <$>)
 
 decodeUtf16 :: String -> T.Text
@@ -129,9 +113,9 @@ filterEmoji str = if BS.head str == (fromIntegral . fromEnum $ 'd') then "FFFD" 
 -- | Parse HTML chars
 parseHTMLChar :: Parser Char
 parseHTMLChar = do
-    char '&'
-    innards <- many $ noneOf (";" :: String)
-    char ';'
+    single '&'
+    innards <- many $ anySingleBut ';'
+    single ';'
     pure . (\case 
         (Just a) -> a 
         Nothing -> '?') $ M.lookup innards (M.fromList [("amp",'&'),("gt",'>'),("lt",'<'),("quot",'"'),("euro",'€'),("ndash",'–'),("mdash",'—')])

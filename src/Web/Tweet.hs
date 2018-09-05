@@ -1,23 +1,23 @@
 -- | Various utilities to tweet using the twitter api
 --
--- Make sure you have a file credentials file (default the executable looks for is `.cred`) with the following info:
+-- Make sure you have a file credentials file (default the executable looks for is @$HOME/.cred.toml@) with the following info:
 --
 -- @
 --
--- api-key: API_KEY
+-- api-key = "API_KEY"
 --
--- api-sec: API_SECRE
+-- api-sec = "API_SECRET"
 --
--- tok: OAUTH_TOKEN
+-- tok = "OAUTH_TOKEN"
 --
--- tok-sec: TOKEN_SECRET
+-- tok-sec = "TOKEN_SECRET"
 --
 -- @
 
 module Web.Tweet
     (
     -- * Functions to tweet
-    basicTweet
+      basicTweet
     , thread
     , reply
     -- * Data type for a tweet

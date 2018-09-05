@@ -17,7 +17,6 @@ import qualified Data.Text.IO           as TIO
 import           Network.HTTP.Client
 import           Prelude                hiding (lookup)
 import           Text.Toml
-import           Text.Toml.Types
 import           Web.Authenticate.OAuth
 import           Web.Tweet.Types
 import           Web.Tweet.Utils

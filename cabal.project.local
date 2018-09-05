@@ -1,5 +1,2 @@
 constraints: tweet-hs +development
 optimization: 2
-tests: True
-benchmarks: True
-documentation: True

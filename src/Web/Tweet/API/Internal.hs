@@ -30,7 +30,7 @@ showFilteredTL :: [Filter] -> String -> Int -> Bool -> FilePath -> IO String
 showFilteredTL filters sn count color = fmap (showTweets color . fmap (foldr (.) id filters)) . getProfile sn count
 
 -- | Display user timeline in color, as appropriate
-showTweets :: Bool -> Either (ParseError Char Void) Timeline -> String
+showTweets :: Bool -> Either (ParseErrorBundle String Void) Timeline -> String
 showTweets color = either show id . fmap (if color then displayTimelineColor else displayTimeline)
 
 -- | Display a user's favorites

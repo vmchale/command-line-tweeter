@@ -51,11 +51,11 @@ tweetData tweet filepath = do
     pure . view tweetId . head . either (error "failed to parse tweet") id . getTweets . BSL.toStrict $ bytes
 
 -- | Gets user profile with max_id set.
-getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseError Char Void) Timeline)
+getProfileMax :: String -> Int -> FilePath -> Maybe Int -> IO (Either (ParseErrorBundle String Void) Timeline)
 getProfileMax = fmap (getTweets . BSL.toStrict) .*** getProfileRaw
 
 -- | Gets user profile with max_id set.
-getProfileMaxMem :: String -> Int -> Config -> Maybe Int -> IO (Either (ParseError Char Void) Timeline)
+getProfileMaxMem :: String -> Int -> Config -> Maybe Int -> IO (Either (ParseErrorBundle String Void) Timeline)
 getProfileMaxMem = fmap (getTweets . BSL.toStrict) .*** getProfileRawMem
 
 -- | Gets user profile with max_id set.
@@ -73,11 +73,11 @@ getProfileRawMem sn count config maxId = getRequestMem ("https://api.twitter.com
         Nothing -> "?screen_name=" ++ sn ++ "&count=" ++ show count }
 
 -- | Get mentions and parse response as a list of tweets
-mentions :: Int -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+mentions :: Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 mentions = fmap (getTweets . BSL.toStrict) .* mentionsRaw
 
 -- | Get mentions and parse response as a list of tweets
-mentionsMem :: Int -> Config -> IO (Either (ParseError Char Void) Timeline)
+mentionsMem :: Int -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 mentionsMem = fmap (getTweets . BSL.toStrict) .* mentionsRawMem
 
 -- | Gets mentions
@@ -91,7 +91,7 @@ mentionsRawMem count = getRequestMem ("https://api.twitter.com/1.1/statuses/ment
     where requestString = "?count=" ++ show count
 
 -- | Get user profile given screen name and how many tweets to return
-getProfile :: String -> Int -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+getProfile :: String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 getProfile sn count filepath = getProfileMax sn count filepath Nothing
 
 -- | Mute a user given their screen name
@@ -132,15 +132,15 @@ getDMsRaw count = getRequest ("https://api.twitter.com/1.1/direct_messages.json"
     where requestString = "?count=" ++ show count
 
 -- | Get a user's favorites
-getFavorites :: Int -> String -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+getFavorites :: Int -> String -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 getFavorites count = fmap (fmap (take count) . getTweets . BSL.toStrict) .* favoriteTweetListRaw
 
 -- | Get a timeline
-getTimeline :: Int -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+getTimeline :: Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 getTimeline = fmap (getTweets . BSL.toStrict) .* getTimelineRaw
 
 -- | Get a timeline
-getTimelineMem :: Int -> Config -> IO (Either (ParseError Char Void) Timeline)
+getTimelineMem :: Int -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 getTimelineMem = fmap (getTweets . BSL.toStrict) .* getTimelineRawMem
 
 -- | Get a user's timeline and return response as a bytestring
@@ -162,11 +162,11 @@ deleteTweetMem :: Integer -> Config -> IO ()
 deleteTweetMem = fmap void . deleteTweetRawMem
 
 -- | Get response, i.e. the tweet deleted
-deleteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+deleteTweetResponse :: Integer -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 deleteTweetResponse = fmap (getTweets . BSL.toStrict) .* deleteTweetRaw
 
 -- | Get response, i.e. the tweet deleted
-deleteTweetResponseMem :: Integer -> Config -> IO (Either (ParseError Char Void) Timeline)
+deleteTweetResponseMem :: Integer -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 deleteTweetResponseMem = fmap (getTweets . BSL.toStrict) .* deleteTweetRawMem
 
 -- | Favorite a tweet given its id
@@ -178,15 +178,15 @@ favoriteTweetMem :: Integer -> Config -> IO ()
 favoriteTweetMem = fmap void . favoriteTweetRawMem
 
 -- | Favorite a tweet and returned the (parsed) response
-favoriteTweetList :: String -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+favoriteTweetList :: String -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 favoriteTweetList = fmap (getTweets . BSL.toStrict) .* favoriteTweetListRaw
 
 -- | Favorite a tweet and returned the (parsed) response
-favoriteTweetListMem :: String -> Config -> IO (Either (ParseError Char Void) Timeline)
+favoriteTweetListMem :: String -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 favoriteTweetListMem = fmap (getTweets . BSL.toStrict) .* favoriteTweetListRawMem
 
 -- | Favorite a tweet and returned the (parsed) response
-favoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+favoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 favoriteTweetResponse = fmap (getTweets . BSL.toStrict) .* favoriteTweetRaw
 
 -- | Unfavorite a tweet given its id
@@ -198,11 +198,11 @@ unfavoriteTweetMem :: Integer -> Config -> IO ()
 unfavoriteTweetMem = fmap void . unfavoriteTweetRawMem
 
 -- | Unfavorite a tweet and returned the (parsed) response
-unfavoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+unfavoriteTweetResponse :: Integer -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 unfavoriteTweetResponse = fmap (getTweets . BSL.toStrict) .* unfavoriteTweetRaw
 
 -- | Unfavorite a tweet and returned the (parsed) response
-unfavoriteTweetResponseMem :: Integer -> Config -> IO (Either (ParseError Char Void) Timeline)
+unfavoriteTweetResponseMem :: Integer -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 unfavoriteTweetResponseMem = fmap (getTweets . BSL.toStrict) .* unfavoriteTweetRawMem
 
 -- | Unretweet a tweet given its id
@@ -214,11 +214,11 @@ unretweetTweetMem :: Integer -> Config -> IO ()
 unretweetTweetMem = fmap void . unretweetTweetRawMem
 
 -- | Unretweet a tweet and returned the (parsed) response
-unretweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+unretweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 unretweetTweetResponse = fmap (getTweets . BSL.toStrict) .* unretweetTweetRaw
 
 -- | Unretweet a tweet and returned the (parsed) response
-unretweetTweetResponseMem :: Integer -> Config -> IO (Either (ParseError Char Void) Timeline)
+unretweetTweetResponseMem :: Integer -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 unretweetTweetResponseMem = fmap (getTweets . BSL.toStrict) .* unretweetTweetRawMem
 
 -- | Unfollow a user given their screen name
@@ -262,11 +262,11 @@ retweetTweetMem :: Integer -> Config -> IO ()
 retweetTweetMem = fmap void . retweetTweetRawMem
 
 -- | Retweet a tweet and returned the (parsed) response
-retweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseError Char Void) Timeline)
+retweetTweetResponse :: Integer -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 retweetTweetResponse = fmap (getTweets . BSL.toStrict) .* retweetTweetRaw
 
 -- | Retweet a tweet and returned the (parsed) response
-retweetTweetResponseMem :: Integer -> Config -> IO (Either (ParseError Char Void) Timeline)
+retweetTweetResponseMem :: Integer -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 retweetTweetResponseMem = fmap (getTweets . BSL.toStrict) .* retweetTweetRawMem
 
 -- | Get a lisr of favorited tweets by screen name; return bytestring response

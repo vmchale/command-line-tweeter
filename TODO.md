@@ -1,3 +1,6 @@
+# Bugs
+- [ ] Fails to parse backslashes
+# Etc.
 - [ ] valgrind: memory leak??
 
 - [ ] htoml-megaparsec

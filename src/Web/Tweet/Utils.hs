@@ -48,7 +48,7 @@ filterQuotes :: Timeline -> Timeline
 filterQuotes = filter ((==Nothing) . view quoted)
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content.
-getTweets :: BS2.ByteString -> Either (ParseError Char Void) Timeline
+getTweets :: BS2.ByteString -> Either (ParseErrorBundle String Void) Timeline
 getTweets = parse parseTweet "" . BS.unpack
 
 -- | Get a list of tweets from a response, returning author, favorites, retweets, and content.
