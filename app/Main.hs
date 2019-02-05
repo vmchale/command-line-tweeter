@@ -56,7 +56,7 @@ main = putStrLn bird >> execParser opts >>= select
         opts        = info (helper <*> versionInfo <*> program)
             (fullDesc
             <> progDesc "Tweet and view tweets"
-            <> header "clit - a Command Line Interface Tweeter")
+            <> header "tweet - a Command Line Interface Tweeter")
 
 -- | Executes program given parsed `Program`
 select :: Program -> IO ()

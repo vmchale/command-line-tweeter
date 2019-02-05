@@ -1,6 +1,6 @@
 cabal-version: >=1.10
 name: tweet-hs
-version: 1.0.1.41
+version: 1.0.1.43
 license: BSD3
 license-file: LICENSE
 copyright: 2016-2018 Vanessa McHale
