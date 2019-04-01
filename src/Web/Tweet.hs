@@ -40,7 +40,6 @@ module Web.Tweet
     ) where
 
 import           Control.Monad
-import           Data.Default
 import           Data.List.Split        (chunksOf)
 import           Data.Maybe
 import           Lens.Micro
@@ -88,4 +87,4 @@ reply contents hs idNum = thread contents hs idNum 1
 
 -- | Make a `Tweet` with only the contents.
 mkTweet :: String -> Tweet
-mkTweet contents = over status (const contents) def
+mkTweet contents = over status (const contents) pricklyTweet

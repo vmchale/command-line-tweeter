@@ -60,7 +60,6 @@ library
         Web.Tweet.API.Internal
         Web.Tweet.Utils.API
     default-language: Haskell2010
-    default-extensions: LambdaCase
     ghc-options: -Wall -Wincomplete-uni-patterns
                  -Wincomplete-record-updates
     build-depends:
