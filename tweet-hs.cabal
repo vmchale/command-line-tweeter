@@ -75,7 +75,6 @@ library
         microlens -any,
         unordered-containers -any,
         htoml-megaparsec >=2.1.0.0,
-        data-default -any,
         text -any,
         containers -any,
         ansi-wl-pprint -any,

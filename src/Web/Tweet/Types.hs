@@ -1,11 +1,6 @@
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric  #-}
-
 -- | Exports the `Tweet` type, a datatype for building tweets easily
 module Web.Tweet.Types where
 
-import           Data.Default
-import           GHC.Generics
 import           Lens.Micro
 import           Web.Authenticate.OAuth
 
@@ -14,7 +9,7 @@ data Tweet = Tweet
     { _status  :: String
     , _handles :: [String]
     , _replyID :: Maybe Int
-    } deriving (Generic, Default)
+    }
 
 -- | Data type for tweets as they are returned
 data TweetEntity = TweetEntity
@@ -26,7 +21,10 @@ data TweetEntity = TweetEntity
     , _quoted     :: Maybe TweetEntity
     , _retweets   :: Int
     , _favorites  :: Int
-    } deriving (Generic, Default, Eq, Show)
+    } deriving (Eq)
+
+pricklyTweet :: Tweet
+pricklyTweet = Tweet undefined [] Nothing
 
 -- | Stores data like (name, text, favoriteCount, retweetCount)
 type Timeline = [TweetEntity]

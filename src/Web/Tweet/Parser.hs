@@ -1,22 +1,23 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+{-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Module containing parsers for tweet and response data.
 module Web.Tweet.Parser ( parseTweet
                         , getData ) where
 
-import Control.Composition ((.*))
-import qualified Data.ByteString as BS
-import Text.Megaparsec.Byte
-import Text.Megaparsec.Byte.Lexer as L
-import Text.Megaparsec
-import Web.Tweet.Types
-import qualified Data.Map as M
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Control.Monad
-import Data.Maybe
-import Data.Void
+import           Control.Composition        ((.*))
+import           Control.Monad
+import qualified Data.ByteString            as BS
+import qualified Data.Map                   as M
+import           Data.Maybe
+import qualified Data.Text                  as T
+import qualified Data.Text.Encoding         as TE
+import           Data.Void
+import           Text.Megaparsec
+import           Text.Megaparsec.Byte
+import           Text.Megaparsec.Byte.Lexer as L
+import           Web.Tweet.Types
 
 type Parser = Parsec Void String
 
@@ -27,7 +28,7 @@ parseTweet = many (try getData <|> (const (TweetEntity "" "" "" 0 mempty Nothing
 -- | Parse a single tweet's: n, text, fave count, retweet count
 getData :: Parser TweetEntity
 getData = do
-    idNum <- read <$> filterStr "id" 
+    idNum <- read <$> filterStr "id"
     t <- filterStr "text"
     skipMentions
     n <- filterStr "name"
@@ -55,7 +56,7 @@ parseQuoted = do
     contents <- optional $ string "\",\"quoted_status"
     case contents of
         (Just _) -> pure <$> getData
-        _ -> pure Nothing
+        _        -> pure Nothing
 
 -- | Skip a set of square brackets []
 skipInsideBrackets :: Parser ()
@@ -91,7 +92,7 @@ newlineChar = string "\\n" >> pure '\n'
 unicodeChar :: Parser Char
 unicodeChar = toEnum . fromIntegral . f <$> go
     where go = string "\\u" >> count 4 anySingle
-          f = fromHex . filterEmoji . BS.pack . fmap (fromIntegral . fromEnum) 
+          f = fromHex . filterEmoji . BS.pack . fmap (fromIntegral . fromEnum)
 
 emojiChar :: Parser Char
 emojiChar = go a
@@ -103,7 +104,7 @@ decodeUtf16 = TE.decodeUtf16BE . BS.concat . go
     where
         go []             = []
         go (a:b:c:d:rest) = let sym = convert16 [a,b] [c,d] in sym : go rest
-        go _ = error "Internal error: decodeUtf16 failed."
+        go _              = error "Internal error: decodeUtf16 failed."
         convert16 x y = BS.pack [(read . ("0x"<>)) x, (read . ("0x"<>)) y]
 
 -- | helper function to ignore emoji
@@ -116,8 +117,8 @@ parseHTMLChar = do
     single '&'
     innards <- many $ anySingleBut ';'
     single ';'
-    pure . (\case 
-        (Just a) -> a 
+    pure . (\case
+        (Just a) -> a
         Nothing -> '?') $ M.lookup innards (M.fromList [("amp",'&'),("gt",'>'),("lt",'<'),("quot",'"'),("euro",'€'),("ndash",'–'),("mdash",'—')])
 
 -- | Parse escaped characters
