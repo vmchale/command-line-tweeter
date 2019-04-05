@@ -1,10 +1,9 @@
 module Main where
 
 import           Criterion.Main
-import qualified Data.ByteString             as BS
+import qualified Data.ByteString  as BS
 import           Text.Megaparsec
 import           Web.Tweet.Parser
-import           Web.Tweet.Parser.FastParser
 
 setupEnv :: IO BS.ByteString
 setupEnv = BS.readFile "test/data"
@@ -15,13 +14,7 @@ setupEnv' = readFile "test/data"
 main :: IO ()
 main =
     defaultMain [
-            env setupEnv $ \ file ->
-            bgroup "aeson parser"
-                  [ bench "226" $ whnf fast file ]
-            , env setupEnv' $ \ file ->
+              env setupEnv' $ \ file ->
               bgroup "handrolled parser"
                   [ bench "226" $ whnf (parse parseTweet) file ]
             ]
-    where
-        fast = fmap (fmap fromFast) . fastParse
-
