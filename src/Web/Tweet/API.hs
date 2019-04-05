@@ -6,6 +6,7 @@ module Web.Tweet.API where
 import           Control.Composition
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import           Data.Containers.ListUtils  (nubOrd)
 import           Data.Functor               (($>))
 import           Data.Maybe                 (isJust)
 import           Data.Void
@@ -124,7 +125,8 @@ muteRepliers str twid fp = do
     us <- getReplies str twid fp
     case us of
         Left{} -> pure []
-        Right xs -> let toMute = _screenName <$> xs in traverse (\u -> mute u fp $> u) toMute
+        -- TODO: add a delay so I don't get rate limited?
+        Right xs -> let toMute = nubOrd (_screenName <$> xs) in traverse (\u -> mute u fp $> u) toMute
 
 -- | Gets mentions
 mentionsRaw :: Int -> FilePath -> IO BSL.ByteString
