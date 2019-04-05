@@ -1,8 +1,10 @@
 ---
 sudo: false
+language: c
 cache:
   directories:
-    - $HOME/.stack
+    - $HOME/.cabal
+    - $HOME/.ghc
 addons:
   apt:
     packages:
@@ -10,62 +12,40 @@ addons:
 matrix:
   include:
 
-    # Linux
     - env: TARGET=x86_64-unkown-linux-gnu
-      language: python
+      addons:
+        apt:
+          update: true
+          sources:
+            - hvr-ghc
+          packages:
+            - ghc-8.6.4
+            - cabal-install-2.4
 
-    # OS X
     - env: TARGET=x86_64-apple-darwin
       os: osx
-      language: default
 
 before_install:
-  - mkdir -p ~/.local/bin
-  - export PATH=$HOME/.local/bin:$PATH
   - |
     if [ `uname` = "Darwin" ]
     then
-      curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+      brew install cabal-install
+      cabal new-update
     else
-      curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+      export PATH=/opt/ghc/bin:$PATH
+      cabal new-update
     fi
-  - chmod a+x ~/.local/bin/stack
-  - |
-    if [ `uname` = "Linux" ]
-    then
-      pip install yamllint
-    else
-      echo "skipping yaml verification..."
-    fi
-
-install:
-  - travis_wait 40 stack --no-terminal --install-ghc test --only-dependencies
+  - export PATH=$HOME/.cabal/bin:$PATH
 
 script:
-  - stack --no-terminal build --haddock --no-haddock-deps --test --no-run-tests --bench --no-run-benchmarks
-  - |
-    if [ `uname` = "Linux" ]
-    then
-      yamllint stack.yaml
-      yamllint appveyor.yml
-      yamllint .travis.yml
-    else
-      echo "skipping yaml verification..."
-    fi
-  - |
-    if [ `uname` = "Linux" ]
-    then
-      curl -sL https://raw.github.com/ndmitchell/hlint/master/misc/travis.sh | sh -s src app bench test
-      curl -sL https://raw.github.com/ndmitchell/weeder/master/misc/travis.sh | sh -s .
-    else
-      echo 'skipping hlint/weeder...'
-    fi
+  - cabal new-build
+  - cabal new-test
   - |
     if [ `uname` = "Darwin" ]
     then
-      export BINPATH="$(find . -name tweet -perm 755 | tail -n1)"
+      export BINPATH="$(find dist-newstyle/ -name tweet -perm 755 | tail -n1)"
     else
-      export BINPATH="$(find -name tweet -executable | head -n1)"
+      export BINPATH="$(find dist-newstyle/ -name tweet -executable | tail -n1)"
     fi
   - echo $BINPATH
   - mv $BINPATH tweet-$TARGET
@@ -73,7 +53,7 @@ script:
 
 deploy:
   api_key:
-    secure: "bdJVbM9pdNqkeQb9O4mUocyA+zLAHupCLUYMPyi5jZVXF5hDPQeB93C7bMb+G4DzfYdDhDvy/VACYSGWnV2JwbSDObtAi8//wiN4Ir/AjK6aELEF8oVuoPOr4geIOMpjcUbT5JZhqqTF4Ogtd0jW97eg6LnkOZj/Nmirk7NL9FV85r3iw1MEIWBsLdHbpHKgyItOo2YKh0dM3QTZ3tjaeEhEVgd4VQQlEB2SAtueOu/lJhbjT6Y7ztGLW+UXE6ITXuG623ewA8tXt8oyeDx0HES04RVnfkDN7QIDC7Crcx7Q7Kb+yCc1cRe9QQ/9/kaeloCYd0XAKf+Bd1kyH2MIm+/Pnriz5pkM+2z1xEUhTXqXM6Wm1cXHVXRUHJQWayii1TSDp8DhVVoz8N0L3GMEIIJi1rdkO4qA84JcZkQFnH4NhvVK9Bkd/a++h6vh2WOg/nvwnOUBooNLkKik78PrIgpgTapW8yFyXrOlVqtQ9sdCmhrpQGn7Ja1P2z3tNmZgSvIcyhx/SLgHegPae5EJ9roFWRNJ9A/tlgyqNbxBdr5hLWSo3zqyJXj51cqd68tp09lloXLlC9Q2HlAejenfWYQ4KEwT1A8u+cK9lJ7pN+hgmlbQFCz9aYzokD6CCzsdJo01yQMCW2LtlKEeWiUVuA3MrWZ3l+oFQ6/npGQoOQY="
+    secure: "Un0Ebl9I9CAEB+3CEeSz28oYRN138Nj65xZWTBc/qGjJVZM647N0LklDSmVU/Rq8IC/FqFQEQkT3kb6DJDgOgl8FTun9CkFB4IoHNKFuM7XLnhgMS6lBsKDFz6JVAZ6yHIEGzYlEn1EB2/ZDeBwrWAwfFl1/hq5V5vFaLIz5Pn5lEFrBjB6xmUrz0S+1bc8u0vyN2jxnhqSiX5G1bObxnN9i5gMzhgn2snWIZO4Ee6MRHS2Ru6XLMNoaEzyb7eG8rGxEJAct44GvcDeJbNX29X50QWGU9j/KIBPM8zF+WI6oIIs7NnHzOEfUNSb4MzfRdIoK8OyxwHfKqFl43pJKutvH69ovYnfw92Ka1WlO0ziIiOV3fupsXRIu91fqhPcvBHvdPkGq2x/OE56v3nHCHkc2MYGf4x8oM1Ml7w3RYZNcI2TdGo5s6jpCEukoLM27dRjYdtqVxB4CSoIrYbELTPXOMbQtTH+sxWDcu+keqvC6j/u4Jjk6TaiRt+Ftwz5UBI53Sjbf+UzmKjr2ICB65mItZM3pOCFloLtnRJFMxYkRSUAqwT0esrMZ61iJc2PJ2RLGIAJ3KDDr5pWoB+SR6K4p8MO/qYkGQugi77hoC3VlCnKOxYn69LsK2CSHvTUsbqPIZIwXD+RiFsWWW8dfWzR5DGEaLhfZExgQZKzUk0s="
   file: tweet-$TARGET
   on:
     tags: true
