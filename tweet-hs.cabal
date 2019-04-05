@@ -75,8 +75,7 @@ library
         containers >=0.6.0.0,
         ansi-wl-pprint -any,
         composition-prelude -any,
-        extra -any,
-        aeson -any
+        extra -any
     
     if flag(development)
         ghc-options: -Werror
