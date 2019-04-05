@@ -9,6 +9,7 @@ module Web.Tweet.Utils.API (
   , urlString
   , strEncode ) where
 
+import           Control.Monad              ((<=<))
 import qualified Data.ByteString.Char8      as BS
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Char
@@ -32,11 +33,11 @@ getRequestMem urlStr config = do
 
 -- | Make a GET request to twitter given a request string
 getRequest :: String -> FilePath -> IO BSL.ByteString
-getRequest = flip ((. getRequestMem) . (>>=) . mkConfigToml)
+getRequest str = getRequestMem str <=< mkConfigToml
 
 -- | Make a POST request to twitter given a request string
 postRequest :: String -> FilePath -> IO BSL.ByteString
-postRequest = flip ((. postRequestMem) . (>>=) . mkConfigToml)
+postRequest str = postRequestMem str <=< mkConfigToml
 
 -- | Make a POST request to twitter given a request string
 postRequestMem :: String -> Config -> IO BSL.ByteString

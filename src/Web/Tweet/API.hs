@@ -6,6 +6,7 @@ module Web.Tweet.API where
 import           Control.Composition
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import           Data.Functor               (($>))
 import           Data.Maybe                 (isJust)
 import           Data.Void
 import           Lens.Micro
@@ -23,13 +24,13 @@ getMarkov = fmap (map (view text)) .** getAll
 getAll :: String -> Maybe Int -> FilePath -> IO Timeline
 getAll sn maxId filepath = do
     tweets <- either (error "Parse tweets failed") id <$> getProfileMax sn 200 filepath maxId
-    let lastId = _tweetId <$> tweets^?_last
+    let lastId = _tweetId <$> tweets ^? _last
     if lastId == maxId then
         pure []
     else
         do
             if isJust lastId
-                then putStrLn $ "fetching tweets since " ++ show (lastId^?!_Just) ++ "..."
+                then putStrLn $ "fetching tweets since " ++ show (lastId ^?! _Just) ++ "..."
                 else pure ()
             next <- getAll sn lastId filepath
             pure (tweets ++ next)
@@ -79,6 +80,51 @@ mentions = fmap (getTweets . BSL.toStrict) .* mentionsRaw
 -- | Get mentions and parse response as a list of tweets
 mentionsMem :: Int -> Config -> IO (Either (ParseErrorBundle String Void) Timeline)
 mentionsMem = fmap (getTweets . BSL.toStrict) .* mentionsRawMem
+
+searchRaw :: String -> FilePath -> IO BSL.ByteString
+searchRaw str = getRequest ("https://api.twitter.com/1.1/search/tweets.json" ++ str)
+
+searchRepliesRaw :: Maybe Int -- ^ Max ID
+                 -> String -- ^ Username
+                 -> Int -- ^ Tweet ID
+                 -> FilePath
+                 -> IO BSL.ByteString
+searchRepliesRaw maxid uname twid = searchRaw ("?q=to%3A" ++ uname ++ "&since_id=" ++ show twid ++ maxidUrl)
+    where maxidUrl = case maxid of
+            Just id' -> "&max_id=" ++ show id'
+            Nothing  -> ""
+
+loopReplies :: Maybe Int -> Maybe Int -> String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
+loopReplies pastMax maxid uname twid fp =
+    if maxid == pastMax
+        then pure (Right [])
+        else do
+            next <- searchReplies maxid uname twid fp
+            case next of
+                Right [] -> pure (Right [])
+                Left x -> pure (Left x)
+                Right tws -> let newMax = minimum (_tweetId <$> tws)
+                        in fmap (tws ++) <$> loopReplies maxid (Just newMax) uname twid fp
+
+searchReplies :: Maybe Int -> String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
+searchReplies = fmap (getTweets . BSL.toStrict) .*** searchRepliesRaw
+
+getReplies :: String -- ^ Screen name
+           -> Int -- ^ Tweet
+           -> FilePath
+           -> IO (Either (ParseErrorBundle String Void) Timeline)
+getReplies str twid = fmap (fmap (filter p)) . loopReplies (Just 0) Nothing str twid
+    where p entity = _replyTo entity == Just twid
+
+muteRepliers :: String
+             -> Int
+             -> FilePath
+             -> IO [String]
+muteRepliers str twid fp = do
+    us <- getReplies str twid fp
+    case us of
+        Left{} -> pure []
+        Right xs -> let toMute = _screenName <$> xs in traverse (\u -> mute u fp $> u) toMute
 
 -- | Gets mentions
 mentionsRaw :: Int -> FilePath -> IO BSL.ByteString

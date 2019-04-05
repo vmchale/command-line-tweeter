@@ -9,6 +9,7 @@ module Web.Tweet.Parser ( parseTweet
 import           Control.Composition        ((.*))
 import           Control.Monad
 import qualified Data.ByteString            as BS
+import           Data.List                  (isInfixOf)
 import qualified Data.Map                   as M
 import           Data.Maybe
 import qualified Data.Text                  as T
@@ -23,7 +24,13 @@ type Parser = Parsec Void String
 
 -- | Parse some number of tweets
 parseTweet :: Parser Timeline
-parseTweet = many (try getData <|> (const (TweetEntity "" "" "" 0 mempty Nothing 0 0) <$> eof))
+parseTweet = many (try getData <|> (TweetEntity "" Nothing "" "" 0 mempty Nothing 0 0 <$ eof))
+
+inReplyTo :: String -> Maybe Int
+inReplyTo str =
+    if "null" `isInfixOf` str
+        then Nothing
+        else pure (read str)
 
 -- | Parse a single tweet's: n, text, fave count, retweet count
 getData :: Parser TweetEntity
@@ -31,6 +38,7 @@ getData = do
     idNum <- read <$> filterStr "id"
     t <- filterStr "text"
     skipMentions
+    irt <- inReplyTo <$> filterStr "in_reply_to_status_id"
     n <- filterStr "name"
     screenn' <- filterStr "screen_name"
     --withheldCountries <- (catMaybes . sequence) <$> optional filterList
@@ -41,12 +49,12 @@ getData = do
         "false" -> do
             rts <- read <$> filterStr "retweet_count"
             faves <- read <$> filterStr "favorite_count"
-            pure (TweetEntity t n screenn' idNum withheldCountries Nothing rts faves)
+            pure (TweetEntity t irt n screenn' idNum withheldCountries Nothing rts faves)
         "true" -> do
             q <- parseQuoted
             rts <- read <$> filterStr "retweet_count"
             faves <- read <$> filterStr "favorite_count"
-            pure $ TweetEntity t n screenn' idNum withheldCountries q rts faves
+            pure $ TweetEntity t irt n screenn' idNum withheldCountries q rts faves
         _ -> error "is_quote_status must have a value of \"true\" or \"false\""
 
 -- | Parse a the quoted tweet

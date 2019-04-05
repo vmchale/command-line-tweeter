@@ -2,7 +2,6 @@
 module Web.Tweet.Utils (
     hits
   , hits'
-  , getTweetsFast
   , getTweets
   , displayTimeline
   , displayTimelineColor
@@ -15,15 +14,14 @@ module Web.Tweet.Utils (
   ) where
 
 import           Control.Composition
-import qualified Data.ByteString             as BS2
-import qualified Data.ByteString.Char8       as BS
+import qualified Data.ByteString        as BS2
+import qualified Data.ByteString.Char8  as BS
 import           Data.List
 import           Data.List.Extra
 import           Data.Void
 import           Lens.Micro.Extras
 import           Text.Megaparsec
 import           Web.Tweet.Parser
-import           Web.Tweet.Parser.FastParser hiding (text)
 import           Web.Tweet.Types
 import           Web.Tweet.Utils.Colors
 
@@ -51,14 +49,9 @@ filterQuotes = filter ((==Nothing) . view quoted)
 getTweets :: BS2.ByteString -> Either (ParseErrorBundle String Void) Timeline
 getTweets = parse parseTweet "" . BS.unpack
 
--- | Get a list of tweets from a response, returning author, favorites, retweets, and content.
--- This version uses aeson, which it's far faster, but also has worse error messages.
-getTweetsFast :: BS2.ByteString -> Either String Timeline
-getTweetsFast = fmap (fmap fromFast) . fastParse
-
 -- | Display Timeline without color
 displayTimeline :: Timeline -> String
-displayTimeline (TweetEntity content u sn idTweet _ Nothing rts fave:rest) = concat [u
+displayTimeline (TweetEntity content _ u sn idTweet _ Nothing rts fave:rest) = concat [u
     , " ("
     , sn
     , ")"
@@ -75,7 +68,7 @@ displayTimeline (TweetEntity content u sn idTweet _ Nothing rts fave:rest) = con
     , show idTweet
     ,"\n\n"
     ,displayTimeline rest]
-displayTimeline (TweetEntity content u sn idTweet _ (Just q) rts fave:rest) = concat [u
+displayTimeline (TweetEntity content _ u sn idTweet _ (Just q) rts fave:rest) = concat [u
     , " ("
     , sn
     , ")"
@@ -104,7 +97,7 @@ bird = toPlainBlue "🐦\n"
 
 -- | Display Timeline in color
 displayTimelineColor :: Timeline -> String
-displayTimelineColor (TweetEntity content u sn idTweet _ Nothing rts fave:rest) = concat [toYellow u
+displayTimelineColor (TweetEntity content _ u sn idTweet _ Nothing rts fave:rest) = concat [toYellow u
     , " ("
     , sn
     , ")"
@@ -120,7 +113,7 @@ displayTimelineColor (TweetEntity content u sn idTweet _ Nothing rts fave:rest) 
     , toBlue (show idTweet)
     , "\n\n"
     , displayTimelineColor rest]
-displayTimelineColor (TweetEntity content u sn idTweet _ (Just q) rts fave:rest) = concat [toYellow u
+displayTimelineColor (TweetEntity content _ u sn idTweet _ (Just q) rts fave:rest) = concat [toYellow u
     , " ("
     , sn
     , ")"
@@ -152,7 +145,7 @@ fixNewline = replace "\n" "\n    "
 -- | sort tweets by most successful
 sortTweets :: Timeline -> Timeline
 sortTweets = sortBy compareTweet
-    where compareTweet (TweetEntity _ _ _ _ _ _ r1 f1) (TweetEntity _ _ _ _ _ _ r2 f2) = compare (2*r2 + f2) (2*r1 + f1)
+    where compareTweet (TweetEntity _ _ _ _ _ _ _ r1 f1) (TweetEntity _ _ _ _ _ _ _ r2 f2) = compare (2*r2 + f2) (2*r1 + f1)
 
 -- | helper function to get the key as read from a file
 keyLinePie :: String -> String

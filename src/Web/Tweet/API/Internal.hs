@@ -22,6 +22,9 @@ showBest sn n color = fmap (showTweets color . pure . take n . hits) . getAll sn
 showBest' :: String -> Int -> Bool -> FilePath -> IO String
 showBest' sn n color = fmap (showTweets color . pure . take n . hits') . getAll sn Nothing
 
+showReplies :: String -> Int -> Bool -> FilePath -> IO String
+showReplies uname twid color = fmap (showTweets color) . getReplies uname twid
+
 -- | Display user timeline
 showTimeline :: Int -> Bool -> FilePath -> IO String
 showTimeline count color = fmap (showTweets color) . getTimeline count

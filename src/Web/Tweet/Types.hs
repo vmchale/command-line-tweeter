@@ -14,6 +14,7 @@ data Tweet = Tweet
 -- | Data type for tweets as they are returned
 data TweetEntity = TweetEntity
     { _text       :: String
+    , _replyTo    :: Maybe Int
     , _name       :: String
     , _screenName :: String
     , _tweetId    :: Int

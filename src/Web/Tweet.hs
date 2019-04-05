@@ -52,7 +52,7 @@ import           Web.Tweet.Utils.API
 
 -- | Tweet a string given a path to credentials; return the id of the status.
 --
--- > basicTweet "On the airplane." ".cred"
+-- > basicTweet "On the airplane." ".cred.toml"
 basicTweet :: String -> FilePath -> IO Int
 basicTweet contents = tweetData (mkTweet contents)
 
@@ -87,4 +87,4 @@ reply contents hs idNum = thread contents hs idNum 1
 
 -- | Make a `Tweet` with only the contents.
 mkTweet :: String -> Tweet
-mkTweet contents = over status (const contents) pricklyTweet
+mkTweet contents = over status (pure contents) pricklyTweet

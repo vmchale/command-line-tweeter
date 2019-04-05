@@ -1,6 +1,7 @@
 module Main where
 
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import           Data.Foldable              (traverse_)
 import           Data.Maybe
 import           Data.Version
 import           Options.Applicative
@@ -33,6 +34,8 @@ data Command = Timeline { count :: Maybe Int }
     | Mute { screenName' :: String }
     | Unmute { screenName' :: String }
     | Dump { screenName' :: String }
+    | Replies { screenName' :: String, twId :: Integer }
+    | MuteReplies { screenName' :: String, twId :: Integer }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -74,6 +77,11 @@ selectCommand (SendInput maybeNum Nothing Nothing) _ file  = fromStdIn (fromMayb
 selectCommand (SendInput maybeNum (Just rId) (Just h)) _ file = threadStdIn h (pure . read $ rId) (fromMaybe 15 maybeNum) file
 selectCommand (SendInput maybeNum (Just rId) Nothing) _ file = threadStdIn [] (pure . read $ rId) (fromMaybe 15 maybeNum) file
 selectCommand (SendInput maybeNum Nothing (Just h)) _ file = threadStdIn h Nothing (fromMaybe 15 maybeNum) file
+selectCommand (Replies uname twid) c file = putStrLn =<< showReplies uname (fromIntegral twid) c file
+selectCommand (MuteReplies uname twid) _ file = do
+    muted <- muteRepliers uname (fromIntegral twid) file
+    putStrLn "Muted:"
+    traverse_ putStrLn muted
 selectCommand (Timeline maybeNum) c file = putStrLn =<< showTimeline (fromMaybe 11 maybeNum) c file
 selectCommand (Mentions maybeNum) c file = putStrLn =<< showTweets c <$> mentions (fromMaybe 11 maybeNum) file
 selectCommand (Profile maybeNum n False False) c file = putStrLn =<< showProfile (fromMaybe mempty n) (fromMaybe 11 maybeNum) c file
@@ -139,12 +147,14 @@ program = Program
         <> command "rt" (info rt (progDesc "Retweet a tweet"))
         <> command "follow" (info fol (progDesc "Follow a user"))
         <> command "unfollow" (info unfol (progDesc "Unfollow a user"))
+        <> command "replies" (info repliesParser (progDesc "Show replies to a tweet"))
         <> command "list" (info list (progDesc "List a user's favorites"))
         <> command "dump" (info dump (progDesc "Dump tweets (for debugging)"))
         <> command "block" (info blockParser (progDesc "Block a user"))
         <> command "unblock" (info unblockParser (progDesc "Unblock a user"))
         <> command "mute" (info muteParser (progDesc "Mute a user"))
         <> command "unmute" (info unmuteParser (progDesc "Unmute a user"))
+        <> command "mute-replies" (info muteRepliesParser (progDesc "Mute everyone who replied to a particular tweet"))
         <> command "mentions" (info mentionsParser (progDesc "Fetch mentions")))
     <*> optional (strOption
         (long "cred"
@@ -239,6 +249,12 @@ getInt :: Parser Integer
 getInt = read <$> argument str
     (metavar "TWEET_ID"
     <> help "ID of tweet")
+
+repliesParser :: Parser Command
+repliesParser = Replies <$> user <*> getInt
+
+muteRepliesParser :: Parser Command
+muteRepliesParser = MuteReplies <$> user <*> getInt
 
 -- | Parser for the user subcommand
 profile :: Parser Command
