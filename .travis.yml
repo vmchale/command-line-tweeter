@@ -39,7 +39,6 @@ before_install:
 
 script:
   - cabal new-build
-  - cabal new-test
   - |
     if [ `uname` = "Darwin" ]
     then
