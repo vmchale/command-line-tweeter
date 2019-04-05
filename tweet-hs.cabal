@@ -1,9 +1,9 @@
 cabal-version: >=1.10
 name: tweet-hs
-version: 1.0.1.43
+version: 1.0.1.44
 license: BSD3
 license-file: LICENSE
-copyright: 2016-2018 Vanessa McHale
+copyright: 2016-2019 Vanessa McHale
 maintainer: vamchale@gmail.com
 author: Vanessa McHale
 stability: stable
@@ -48,7 +48,6 @@ flag parallel-gc
 library
     exposed-modules:
         Web.Tweet
-        Web.Tweet.Parser.FastParser
         Web.Tweet.Parser
         Web.Tweet.Sign
         Web.Tweet.API
