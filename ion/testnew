@@ -1,3 +1,0 @@
-#/usr/bin/env ion
-stack build &&
-bench "./.stack-work/install/x86_64-linux/lts-8.18/8.2.0.20170507/bin/tweet user realDonaldTrump -n11" "tweet user realDonaldTrump -n11"
