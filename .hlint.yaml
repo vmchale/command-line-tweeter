@@ -3,3 +3,4 @@
   - {name: unsafePerformIO, within: []}  # unsafePerformIO can only appear in no modules
   - {name: error, within: [Web.Tweet.Sign, Web.Tweet.Parser, Web.Tweet.API]}
 - ignore: {name: Use camelCase, within: Web.Tweet.Parser.FastParser}
+- ignore: {name: Use section}

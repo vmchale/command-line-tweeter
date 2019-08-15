@@ -36,6 +36,7 @@ data Command = Timeline { count :: Maybe Int }
     | Dump { screenName' :: String }
     | Replies { screenName' :: String, twId :: Integer }
     | MuteReplies { screenName' :: String, twId :: Integer }
+    | MuteMentions { screenName' :: String }
 
 -- | query twitter to post stdin with no fancy options
 fromStdIn :: Int -> FilePath -> IO ()
@@ -82,6 +83,8 @@ selectCommand (MuteReplies uname twid) _ file = do
     muted <- muteRepliers uname (fromIntegral twid) file
     putStrLn "Muted:"
     traverse_ putStrLn muted
+selectCommand (MuteMentions uname) _ file =
+    getMentions uname file
 selectCommand (Timeline maybeNum) c file = putStrLn =<< showTimeline (fromMaybe 11 maybeNum) c file
 selectCommand (Mentions maybeNum) c file = putStrLn =<< showTweets c <$> mentions (fromMaybe 11 maybeNum) file
 selectCommand (Profile maybeNum n False False) c file = putStrLn =<< showProfile (fromMaybe mempty n) (fromMaybe 11 maybeNum) c file
@@ -155,6 +158,7 @@ program = Program
         <> command "mute" (info muteParser (progDesc "Mute a user"))
         <> command "unmute" (info unmuteParser (progDesc "Unmute a user"))
         <> command "mute-replies" (info muteRepliesParser (progDesc "Mute everyone who replied to a particular tweet"))
+        <> command "mute-mentions" (info muteMentionsParser (progDesc "Mute everyone who mentioned a particular user"))
         <> command "mentions" (info mentionsParser (progDesc "Fetch mentions")))
     <*> optional (strOption
         (long "cred"
@@ -255,6 +259,9 @@ repliesParser = Replies <$> user <*> getInt
 
 muteRepliesParser :: Parser Command
 muteRepliesParser = MuteReplies <$> user <*> getInt
+
+muteMentionsParser :: Parser Command
+muteMentionsParser = MuteMentions <$> user
 
 -- | Parser for the user subcommand
 profile :: Parser Command

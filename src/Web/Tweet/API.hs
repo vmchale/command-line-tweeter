@@ -7,6 +7,7 @@ import           Control.Composition
 import           Control.Monad
 import qualified Data.ByteString.Lazy.Char8 as BSL
 import           Data.Containers.ListUtils  (nubOrd)
+import           Data.Foldable              (traverse_)
 import           Data.Functor               (($>))
 import           Data.Maybe                 (isJust)
 import           Data.Void
@@ -85,6 +86,15 @@ mentionsMem = fmap (getTweets . BSL.toStrict) .* mentionsRawMem
 searchRaw :: String -> FilePath -> IO BSL.ByteString
 searchRaw str = getRequest ("https://api.twitter.com/1.1/search/tweets.json" ++ str)
 
+searchMentionsRaw :: Maybe Int -- ^ Max ID
+                  -> String -- ^ Username
+                  -> FilePath
+                  -> IO BSL.ByteString
+searchMentionsRaw maxid uname = searchRaw ("?q=to%3A" ++ uname ++ maxidUrl)
+    where maxidUrl = case maxid of
+            Just id' -> "&max_id=" ++ show id'
+            Nothing  -> ""
+
 searchRepliesRaw :: Maybe Int -- ^ Max ID
                  -> String -- ^ Username
                  -> Int -- ^ Tweet ID
@@ -94,6 +104,27 @@ searchRepliesRaw maxid uname twid = searchRaw ("?q=to%3A" ++ uname ++ "&since_id
     where maxidUrl = case maxid of
             Just id' -> "&max_id=" ++ show id'
             Nothing  -> ""
+
+loopMentions :: Maybe Int -> Maybe Int -> String -> FilePath -> IO ()
+loopMentions pastMax maxid uname fp =
+    if maxid == pastMax
+        then pure ()
+        else do
+            next <- searchMentions maxid uname fp
+            case next of
+                Right [] -> pure ()
+                Left{} -> pure ()
+                Right tws -> do
+                    let newMax = minimum (_tweetId <$> tws)
+                    let toMute = nubOrd (_screenName <$> tws)
+                    putStrLn "Muted:"
+                    traverse_ (\u -> mute u fp *> putStrLn u) toMute
+                    loopMentions maxid (Just newMax) uname fp
+
+getMentions :: String -- ^ Screen name
+            -> FilePath
+            -> IO ()
+getMentions = loopMentions (Just 0) Nothing
 
 loopReplies :: Maybe Int -> Maybe Int -> String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 loopReplies pastMax maxid uname twid fp =
@@ -106,6 +137,9 @@ loopReplies pastMax maxid uname twid fp =
                 Left x -> pure (Left x)
                 Right tws -> let newMax = minimum (_tweetId <$> tws)
                         in fmap (tws ++) <$> loopReplies maxid (Just newMax) uname twid fp
+
+searchMentions :: Maybe Int -> String -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
+searchMentions = fmap (getTweets . BSL.toStrict) .** searchMentionsRaw
 
 searchReplies :: Maybe Int -> String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 searchReplies = fmap (getTweets . BSL.toStrict) .*** searchRepliesRaw
