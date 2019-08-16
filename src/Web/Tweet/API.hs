@@ -10,6 +10,7 @@ import           Data.Containers.ListUtils  (nubOrd)
 import           Data.Foldable              (traverse_)
 import           Data.Functor               (($>))
 import           Data.Maybe                 (isJust)
+import qualified Data.Set                   as S
 import           Data.Void
 import           Lens.Micro
 import           Lens.Micro.Extras
@@ -105,8 +106,8 @@ searchRepliesRaw maxid uname twid = searchRaw ("?q=to%3A" ++ uname ++ "&since_id
             Just id' -> "&max_id=" ++ show id'
             Nothing  -> ""
 
-loopMentions :: Maybe Int -> Maybe Int -> String -> FilePath -> IO ()
-loopMentions pastMax maxid uname fp =
+loopMentions :: Maybe Int -> Maybe Int -> S.Set String -> String -> FilePath -> IO ()
+loopMentions pastMax maxid alreadyMuted uname fp =
     if maxid == pastMax
         then pure ()
         else do
@@ -116,15 +117,16 @@ loopMentions pastMax maxid uname fp =
                 Left{} -> pure ()
                 Right tws -> do
                     let newMax = minimum (_tweetId <$> tws)
-                    let toMute = nubOrd (_screenName <$> tws)
+                    let toMute = [ tw | tw <- nubOrd (_screenName <$> tws), tw `S.notMember` alreadyMuted ]
+                    let modAlready = thread [ S.insert k | k <- toMute ]
                     putStrLn "Muted:"
                     traverse_ (\u -> mute u fp *> putStrLn u) toMute
-                    loopMentions maxid (Just newMax) uname fp
+                    loopMentions maxid (Just newMax) (modAlready alreadyMuted) uname fp
 
-getMentions :: String -- ^ Screen name
-            -> FilePath
-            -> IO ()
-getMentions = loopMentions (Just 0) Nothing
+muteMentions :: String -- ^ Screen name
+             -> FilePath
+             -> IO ()
+muteMentions = loopMentions (Just 0) Nothing mempty
 
 loopReplies :: Maybe Int -> Maybe Int -> String -> Int -> FilePath -> IO (Either (ParseErrorBundle String Void) Timeline)
 loopReplies pastMax maxid uname twid fp =

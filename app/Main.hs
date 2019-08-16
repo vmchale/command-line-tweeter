@@ -83,8 +83,7 @@ selectCommand (MuteReplies uname twid) _ file = do
     muted <- muteRepliers uname (fromIntegral twid) file
     putStrLn "Muted:"
     traverse_ putStrLn muted
-selectCommand (MuteMentions uname) _ file =
-    getMentions uname file
+selectCommand (MuteMentions uname) _ file = muteMentions uname file
 selectCommand (Timeline maybeNum) c file = putStrLn =<< showTimeline (fromMaybe 11 maybeNum) c file
 selectCommand (Mentions maybeNum) c file = putStrLn =<< showTweets c <$> mentions (fromMaybe 11 maybeNum) file
 selectCommand (Profile maybeNum n False False) c file = putStrLn =<< showProfile (fromMaybe mempty n) (fromMaybe 11 maybeNum) c file
