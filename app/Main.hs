@@ -54,7 +54,7 @@ threadStdIn hs idNum num filepath = do
 
 -- | Executes parser
 main :: IO ()
-main = putStrLn bird >> execParser opts >>= select
+main = execParser opts >>= select
     where
         versionInfo = infoOption ("tweet-hs version: " ++ showVersion version) (short 'v' <> long "version" <> help "Show version")
         opts        = info (helper <*> versionInfo <*> program)
