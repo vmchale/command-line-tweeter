@@ -153,7 +153,7 @@ keyLinePie = takeWhile (/=':')
 
 -- | Pick out a key value from a key
 lineByKey :: BS.ByteString -> [(BS.ByteString, BS.ByteString)] -> BS.ByteString
-lineByKey = snd .* head .* (filter . (fst -.* (==)))
+lineByKey = snd .* head .* (filter . (fst .@ (==)))
 
 -- | Filter a line of a file for only the actual data and no descriptors
 filterLine :: String -> String

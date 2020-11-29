@@ -1,17 +1,16 @@
-cabal-version: >=1.10
-name: tweet-hs
-version: 1.0.2.0
-license: BSD3
-license-file: LICENSE
-copyright: 2016-2019 Vanessa McHale
-maintainer: vamchale@gmail.com
-author: Vanessa McHale
-stability: stable
-synopsis: Command-line tool for twitter
-description:
-    a Command Line Interface Tweeter
-category: Web
-build-type: Simple
+cabal-version:      >=1.10
+name:               tweet-hs
+version:            1.0.2.1
+license:            BSD3
+license-file:       LICENSE
+copyright:          2016-2020 Vanessa McHale
+maintainer:         vamchale@gmail.com
+author:             Vanessa McHale
+stability:          stable
+synopsis:           Command-line tool for twitter
+description:        a Command Line Interface Tweeter
+category:           Web
+build-type:         Simple
 extra-source-files:
     README.md
     cabal.project.local
@@ -19,29 +18,25 @@ extra-source-files:
     test/data
 
 source-repository head
-    type: git
+    type:     git
     location: https://hub.darcs.net/vmchale/tweet-hs
 
 flag llvm-fast
-    description:
-        Enable build with llvm backend
-    default: False
+    description: Enable build with llvm backend
+    default:     False
 
 flag library
-    description:
-        Don't build an executable
-    default: False
+    description: Don't build an executable
+    default:     False
 
 flag development
-    description:
-        Enable -Werror
-    default: False
-    manual: True
+    description: Enable -Werror
+    default:     False
+    manual:      True
 
 flag parallel-gc
-    description:
-        Use parallel garbage collector
-    default: False
+    description: Use parallel garbage collector
+    default:     False
 
 library
     exposed-modules:
@@ -50,15 +45,18 @@ library
         Web.Tweet.Sign
         Web.Tweet.API
         Web.Tweet.Utils
-    hs-source-dirs: src
+
+    hs-source-dirs:   src
     other-modules:
         Web.Tweet.Types
         Web.Tweet.Utils.Colors
         Web.Tweet.API.Internal
         Web.Tweet.Utils.API
+
     default-language: Haskell2010
-    ghc-options: -Wall -Wincomplete-uni-patterns
-                 -Wincomplete-record-updates
+    ghc-options:
+        -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+
     build-depends:
         base >=4.11 && <5,
         http-client-tls -any,
@@ -74,55 +72,56 @@ library
         text -any,
         containers >=0.6.0.0,
         ansi-wl-pprint -any,
-        composition-prelude -any,
+        composition-prelude >=3.0.0.0,
         extra -any
-    
+
     if flag(development)
         ghc-options: -Werror
 
 executable tweet
-    main-is: Main.hs
-    hs-source-dirs: app
-    other-modules:
-        Paths_tweet_hs
+    main-is:          Main.hs
+    hs-source-dirs:   app
+    other-modules:    Paths_tweet_hs
     default-language: Haskell2010
-    ghc-options: -Wall -Wincomplete-uni-patterns
-                 -Wincomplete-record-updates
+    ghc-options:
+        -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+
     build-depends:
         base -any,
         tweet-hs -any,
         optparse-applicative -any,
         directory -any,
         bytestring -any
-    
+
     if flag(library)
         buildable: False
-    
+
     if flag(llvm-fast)
         ghc-options: -fllvm -optlo-O3 -O3
-    
+
     if flag(parallel-gc)
         ghc-options: -rtsopts -with-rtsopts=-N
-    
+
     if flag(development)
         ghc-options: -Werror
 
 benchmark tweeths-bench
-    type: exitcode-stdio-1.0
-    main-is: Bench.hs
-    hs-source-dirs: bench
+    type:             exitcode-stdio-1.0
+    main-is:          Bench.hs
+    hs-source-dirs:   bench
     default-language: Haskell2010
-    ghc-options: -Wall -Wincomplete-uni-patterns
-                 -Wincomplete-record-updates
+    ghc-options:
+        -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+
     build-depends:
         base -any,
         criterion -any,
         tweet-hs -any,
         bytestring -any,
         megaparsec -any
-    
+
     if flag(llvm-fast)
         ghc-options: -fllvm -optlo-O3 -O3
-    
+
     if flag(development)
         ghc-options: -Werror
